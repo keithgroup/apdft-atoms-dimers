@@ -61,7 +61,7 @@ def test_add_energies_to_apdft_atoms_7elec():
     df_apdft_sys = df_apdft_atom.query('n_electrons == 7')
     
     df_apdft_refs = add_energies_to_df_apdft(
-        df_qc_sys, df_apdft_sys, ignore_one_row=True
+        df_qc_sys, df_apdft_sys
     )
     assert len(df_apdft_refs) == 30
     systems = list(set(df_apdft_refs['system'].values))

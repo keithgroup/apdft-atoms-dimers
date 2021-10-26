@@ -250,7 +250,7 @@ def test_bond_lengths_apdft_ch_from_bh():
         -38.33896887440571, -38.32589894564336]
     )
     bond_lengths, energies = get_dimer_curve(
-        df_apdft_ref, lambda_value, use_fin_diff=True, apdft_order=2
+        df_apdft_ref, lambda_value=lambda_value, use_fin_diff=True, apdft_order=2,
     )
     assert np.array_equal(bond_lengths_manual, bond_lengths)
     assert np.allclose(energies_manual, energies)
@@ -314,10 +314,10 @@ def test_ch_ip1_apdft_dimer_correctness():
     nh_lambda_value = -1
 
     bh_bond_lengths_initial, bh_e_initial = get_dimer_curve(
-        df_apdft_bh_initial, bh_lambda_value, use_fin_diff=True, apdft_order=apdft_order
+        df_apdft_bh_initial, lambda_value=bh_lambda_value, use_fin_diff=True, apdft_order=apdft_order
     )
     bh_bond_lengths_final, bh_e_final = get_dimer_curve(
-        df_apdft_bh_final, bh_lambda_value, use_fin_diff=True, apdft_order=apdft_order
+        df_apdft_bh_final, lambda_value=bh_lambda_value, use_fin_diff=True, apdft_order=apdft_order
     )
     bh_bond_lengths_initial_eq, bh_e_initial_eq = get_dimer_minimum(
         bh_bond_lengths_initial, bh_e_initial, n_points=n_points, poly_order=poly_order,
@@ -331,10 +331,10 @@ def test_ch_ip1_apdft_dimer_correctness():
 
 
     nh_bond_lengths_initial, nh_e_initial = get_dimer_curve(
-        df_apdft_nh_initial, nh_lambda_value, use_fin_diff=True, apdft_order=apdft_order
+        df_apdft_nh_initial, lambda_value=nh_lambda_value, use_fin_diff=True, apdft_order=apdft_order
     )
     nh_bond_lengths_final, nh_e_final = get_dimer_curve(
-        df_apdft_nh_final, nh_lambda_value, use_fin_diff=True, apdft_order=apdft_order
+        df_apdft_nh_final, lambda_value=nh_lambda_value, use_fin_diff=True, apdft_order=apdft_order
     )
     nh_bond_lengths_initial_eq, nh_e_initial_eq = get_dimer_minimum(
         nh_bond_lengths_initial, nh_e_initial, n_points=n_points, poly_order=poly_order,
@@ -570,6 +570,3 @@ def test_n_ee_apdft_correctness():
         assert np.array_equal(
             ee_apdft_fin_diff[key], ea_apdft_fin_diff_manual[key]
         )
-
-
-test_ch_ip1_apdft_dimer_correctness()

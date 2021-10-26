@@ -118,16 +118,16 @@ def read_json(json_path):
     return json_dict
 
 def get_lambda_value(
-    ref_atomic_numbers, target_atomic_numbers, specific_atom=None, direction=None
-):
-    """
+    ref_atomic_numbers, target_atomic_numbers, specific_atom=None,
+    direction=None):
+    """The overall lambda value between to atomic systems.
     
     Parameters
     ----------
-    ref_atomic_numbers : :obj:`numpy.ndarray`
-
-    target_atomic_numbers : :obj:`numpy.ndarray`
-
+    ref_atomic_numbers : :obj:`numpy.ndarray`, :obj:`list`
+        Atomic numbers of all atoms in the reference system.
+    target_atomic_numbers : :obj:`numpy.ndarray`, :obj:`list`
+        Atomic numbers of all atoms in the target system.
     specific_atom : :obj:`int`, optional
         Applies the entire lambda change to a single atom in dimers. For
         example, OH -> FH+ would be a lambda change of +1 only on the first
@@ -143,7 +143,8 @@ def get_lambda_value(
 
     Returns
     -------
-    :obj:`numpy.ndarray`
+    :obj:`float`
+        Overall lambda value to get from reference to target system.
     """
     assert len(ref_atomic_numbers) == len(target_atomic_numbers)
     if len(ref_atomic_numbers) == 1:
@@ -187,7 +188,9 @@ def unify_qc_energies(df1, df2):
 
     Parameters
     ----------
-    df : :obj:`pandas.DataFrame`
+    df1 : :obj:`pandas.DataFrame`
+        A pandas dataframe. Must have `'electronic_energy'` as a column.
+    df2 : :obj:`pandas.DataFrame`
         A pandas dataframe. Must have `'electronic_energy'` as a column.
     
     Returns
@@ -226,8 +229,22 @@ def unify_qc_energies(df1, df2):
             raise ValueError(f'Methods {methods} are not compatible.')
     return energies
 
-def add_energies_to_df_apdft(df_qc, df_apdft, ignore_one_row=True):
-    """
+def add_energies_to_df_apdft(df_qc, df_apdft):
+    """Adds electronic energy data to the APDFT dataframe.
+
+    Information is used to select states out of the APDFT dataframe.
+
+    Parameters
+    ----------
+    df_qc : :obj:`pandas.dataframe`
+        The quantum chemistry dataframe.
+    df_apdft : :obj:`pandas.dataframe`
+        The APDFT dataframe.
+    
+    Returns
+    -------
+    :obj:`pandas.dataframe`
+        The APDFT dataframe with the added electronic energy data.
     """
     df_qc = df_qc.query('lambda_value == 0')
 
@@ -251,13 +268,13 @@ def add_energies_to_df_apdft(df_qc, df_apdft, ignore_one_row=True):
     return df_apdft
 
 def select_state(df, excitation_level, ignore_one_row=False):
-    """
+    """The dataframe with only the desired electronic state.
 
     Only should be one basis set in this dataframe.
 
     Parameters
     ----------
-    df : :obj:
+    df : :obj:`pandas.dataframe`
         A pandas dataframe. Must have `'electronic_energy'` as a column.
     excitation_level : :obj:`int`
         Desired excited state. `0` for ground, `1` for first excited state, etc.
@@ -266,6 +283,11 @@ def select_state(df, excitation_level, ignore_one_row=False):
         indicative of good filtering. Or, missing data. If you know there is
         no missing data, then you can change this to `True`. Defaults to
         `False`.
+    
+    Returns
+    -------
+    :obj:`pandas.dataframe`
+        The dataframe with only the selected electronic state remaining.
     """
     try:
         assert len(set(df.basis_set.values)) == 1
@@ -341,6 +363,18 @@ def get_multiplicity(df, excitation_level, ignore_one_row=False):
     return multiplicity
 
 def _get_ptable_row(atom_label):
+    """Number of the periodic table an element is in.
+
+    Parameters
+    ----------
+    atom_label : :obj:`str`
+        The element symbol.
+    
+    Returns
+    -------
+    :obj:`int`
+        Row of the periodic table the element is from.
+    """
     for p_row in range(len(all_atom_systems_by_row)):
         if atom_label in all_atom_systems_by_row[p_row]:
             return p_row

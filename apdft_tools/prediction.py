@@ -194,8 +194,9 @@ def get_apdft_pred(
 
 def get_apdft_refs(
     df_qc, df_apdft, target_label, target_n_electrons, basis_set='aug-cc-pVQZ',
-    df_selection='apdft'):
-    """
+    df_selection='apdft', excitation_level=None, specific_atom=None,
+    direction=None):
+    """A dataframe with all possible APDFT references for a given target system.
 
     Parameters
     ----------
@@ -211,6 +212,11 @@ def get_apdft_refs(
     df_selection : :obj:`str`, optional
         Which dataframe is desired. The APDFT (with polynomial coefficients) or
         the QC one that contains lambda calculations.
+    excitation_level : :obj:`int`, optional
+        Selects the excitation levels of the references. ``0`` for ground and
+        ``1`` for first excited state. Defaults to ``None``.
+    specific_atom : :obj:`int`, optional
+        
     
     Returns
     -------
@@ -232,6 +238,40 @@ def get_apdft_refs(
             '& n_electrons == @target_n_electrons'
             '& basis_set == @basis_set'
         )
+        # Selects lambda values
+        refs_sys = tuple(set(df_ref['system']))
+        for i in range(len(refs_sys)):
+            sys_label = refs_sys[i]
+            df_refs_sys = df_ref.query('system == @sys_label')
+            if len(set(df_refs_sys['lambda_value'])) != 1:
+                target_rows = df_qc.query(
+                    'system == @target_label'
+                    '& n_electrons == @target_n_electrons'
+                    '& basis_set == @basis_set'
+                )
+                target_atomic_numbers = target_rows.iloc[0]['atomic_numbers']
+                ref_atomic_numbers = df_refs_sys.iloc[0]['atomic_numbers']
+                sys_lambda_value = get_lambda_value(
+                    ref_atomic_numbers, target_atomic_numbers,
+                    specific_atom=specific_atom, direction=direction
+                )
+                drop_filter = (df_ref['system'] == sys_label) \
+                    & ([df_ref['lambda_value']] != sys_lambda_value)
+                df_ref = df_ref[~drop_filter]
+
+    if excitation_level is not None:
+        assert excitation_level in [0, 1]
+        refs_sys = tuple(set(df_ref['system']))
+        for i in range(len(refs_sys)):
+            sys_label = refs_sys[i]
+            df_refs_sys = df_ref.query('system == @sys_label')
+            ref_sys_multiplicity = get_multiplicity(
+                df_refs_sys, excitation_level
+            )
+            drop_filter = (df_ref['system'] == sys_label) \
+                & ([df_ref['multiplicity']] != ref_sys_multiplicity)
+            df_ref = df_ref[~drop_filter]
+
     return df_ref
 
 def get_qc_change_charge(
@@ -575,7 +615,7 @@ def get_dimer_minimum(bond_lengths, energies, n_points=2, poly_order=4,
     )
     return eq_bond_length, eq_energy
 
-def get_dimer_curve(df, lambda_value, use_fin_diff=False, apdft_order=None):
+def get_dimer_curve(df, lambda_value=None, use_fin_diff=False, apdft_order=None):
     """Bond lengths and their respective electronic energies.
 
     There should only be one system left in the dataframe.
@@ -617,6 +657,8 @@ def get_dimer_curve(df, lambda_value, use_fin_diff=False, apdft_order=None):
     else:
         assert 'electronic_energy' in df.columns
         assert apdft_order is None
+        if lambda_value is not None:
+            df = df.query('lambda_value == @lambda_value')
         bond_lengths = df['bond_length'].values[bond_length_order]
         energies = df['electronic_energy'].values[bond_length_order]
         return np.array(bond_lengths), np.array(energies)
@@ -682,7 +724,8 @@ def get_qc_change_charge_dimer(
     )
     target_initial_n_electrons = target_initial_qc.n_electrons.values[0]
     target_initial_bond_lengths, target_initial_energies = get_dimer_curve(
-        target_initial_qc, 0.0, use_fin_diff=False, apdft_order=None
+        target_initial_qc, lambda_value=None, use_fin_diff=False,
+        apdft_order=None
     )
     _, target_initial_energy = get_dimer_minimum(
         target_initial_bond_lengths, target_initial_energies, n_points=n_points,
@@ -704,7 +747,7 @@ def get_qc_change_charge_dimer(
         'multiplicity == @ground_multiplicity_final'
     )
     target_final_bond_lengths, target_final_energies = get_dimer_curve(
-        target_final_qc, 0.0, use_fin_diff=False, apdft_order=None
+        target_final_qc, lambda_value=None, use_fin_diff=False, apdft_order=None
     )
     _, target_final_energy = get_dimer_minimum(
         target_final_bond_lengths, target_final_energies, n_points=n_points,
@@ -880,7 +923,7 @@ def get_apdft_change_charge_dimer(
             order_preds = []
             for order in range(len(ref_initial.iloc[0]['poly_coeff'])):
                 bond_lengths_initial, energies_initial = get_dimer_curve(
-                    ref_initial, lambda_initial, use_fin_diff=True,
+                    ref_initial, lambda_value=lambda_initial, use_fin_diff=True,
                     apdft_order=order
                 )
                 _, e_target_initial = get_dimer_minimum(
@@ -889,7 +932,7 @@ def get_apdft_change_charge_dimer(
                 )
 
                 bond_lengths_final, energies_final = get_dimer_curve(
-                    ref_final, lambda_final, use_fin_diff=True,
+                    ref_final, lambda_value=lambda_final, use_fin_diff=True,
                     apdft_order=order
                 )
                 _, e_target_final = get_dimer_minimum(
@@ -912,7 +955,8 @@ def get_apdft_change_charge_dimer(
                 '& basis_set == @basis_set'
             )
             bond_lengths_initial, energies_initial = get_dimer_curve(
-                ref_initial_qc, lambda_initial, use_fin_diff=False, apdft_order=None
+                ref_initial_qc, lambda_value=lambda_initial, use_fin_diff=False,
+                apdft_order=None
             )
             _, e_initial = get_dimer_minimum(
                 bond_lengths_initial, energies_initial, n_points=n_points,
@@ -929,7 +973,7 @@ def get_apdft_change_charge_dimer(
                 '& basis_set == @basis_set'
             )
             bond_lengths_final, energies_final = get_dimer_curve(
-                ref_final_qc, lambda_final, use_fin_diff=False, apdft_order=None
+                ref_final_qc, lambda_value=lambda_final, use_fin_diff=False, apdft_order=None
             )
             _, e_target_final = get_dimer_minimum(
                 bond_lengths_final, energies_final, n_points=n_points,

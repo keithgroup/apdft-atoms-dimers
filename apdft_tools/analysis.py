@@ -27,8 +27,7 @@ from apdft_tools.prediction import *
 
 def get_alchemical_errors(
     df_qc, n_electrons, excitation_level=0,
-    basis_set='aug-cc-pVQZ', bond_length=None, return_energies=False
-):
+    basis_set='aug-cc-pVQZ', bond_length=None, return_energies=False):
     """
     
     Parameters
@@ -46,8 +45,7 @@ def get_alchemical_errors(
     :obj:`numpy.ndarray`
         Alchemical energy errors due to modeling a target system by changing
         the nuclear charge of a reference system (e.g., c -> n). The rows and
-        columns are in the same order as the state labels. Energies are in
-        Hartrees.
+        columns are in the same order as the state labels.
     """
     df_alch_pes = df_qc[(df_qc.n_electrons == n_electrons) & (df_qc.basis_set == basis_set)]
     sys_labels = list(set(df_alch_pes.system.values))
