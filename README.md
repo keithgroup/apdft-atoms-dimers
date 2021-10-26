@@ -4,36 +4,28 @@
 
 - [Table of Contents](#table-of-contents)
 - [Requirements](#requirements)
-- [Modules](#modules)
-  - [utils](#utils)
-  - [data](#data)
-  - [pred](#pred)
-- [Units](#units)
+- [Installation](#installation)
 - [License](#license)
 
 ## Requirements
 
 Python 3 with the following packages:
 
-- cclib
 - NumPy
 - Pandas
 - SciPy
 - findiff
 
-## Modules
+## Installation
 
-### utils
+In order to use, reproduce, and analyze APDFT atom and dimer data you need to install the `apdft_tools` package from the [GitHub repository](https://github.com/keithgroup/apdft-atoms-dimers).
+You just have to clone and install the GitHub repo like so.
 
-### data
-
-### pred
-
-## Units
-
-All QCJSONs use Angstrom and Hartree as the units of distance and energy, respectively.
-Derived units adhere to this specification as well; for example, gradients will be in Hartree/Angstrom.
-If properties use other units (e.g., cm<sup>-1</sup> for vibrational frequencies) these are specified in the key descriptions above.
+```text
+git clone https://github.com/keithgroup/apdft-atoms-dimers
+cd apdft-atoms-dimers
+pip install .
+```
 
 ## License
 
