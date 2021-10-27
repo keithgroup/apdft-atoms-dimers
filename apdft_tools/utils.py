@@ -335,11 +335,14 @@ def get_multiplicity(df, excitation_level, ignore_one_row=False):
     -------
     :obj:`float`
     """
-    row = df.iloc[0]
-    if len(row['atomic_numbers']) == 2:
+    if len(df.iloc[0]['atomic_numbers']) == 2:
         is_dimer = True
+        # More careful selection of a row. Will be done by finding the row with
+        # the lowest energy.
+        row = df[df.electronic_energy == df.electronic_energy.min()].iloc[0]
     else:
         is_dimer = False
+        row = df.iloc[0]
     
     if 'lambda_value' in df.columns.values:
         lambda_selection = row['lambda_value']

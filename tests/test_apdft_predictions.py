@@ -475,6 +475,58 @@ def test_n_ea_apdft_correctness():
         )
 
 
+############################################
+#####     Bond Curves and Energies     #####
+############################################
+
+
+def test_oh_from_ne_from_qc():
+    target_label = 'o.h'
+    target_charge = 0
+    excitation_level = 0
+    specific_atom = 0
+    basis_set = 'cc-pV5Z'
+
+    use_fin_diff = False
+    apdft_order = 2
+
+    df_qc_system = df_qc_dimer.query(
+        'system == @target_label'
+        '& charge == @target_charge'
+    )
+    target_n_electrons = df_qc_system.iloc[0]['n_electrons']
+    target_atomic_numbers = df_qc_system.iloc[0]['atomic_numbers']
+
+    # Alchemical predictions
+    df_selection = 'qc'
+    df_references = get_apdft_refs(
+        df_qc_dimer, df_apdft_dimer, target_label, target_n_electrons,
+        basis_set=basis_set, df_selection=df_selection,
+        excitation_level=excitation_level, specific_atom=specific_atom
+    )
+
+    ref_systems = list(set(df_references['system']))
+    ref_systems.sort()
+    assert ref_systems == ['f.h', 'n.h', 'ne.h']
+
+    df_ref_neh = df_references.query('system == "ne.h"')
+    assert df_ref_neh.iloc[0]['multiplicity'] == 2
+
+    neh_energies_manual = np.array([
+        -75.37531839629389, -75.58104544895917, -75.67288660526044,
+        -75.70648616566774, -75.71023924594704, -75.69903899608731,
+        -75.68091242285723, -75.66020154595432, -75.63919901702702,
+        -75.62038369356912, -75.60324660673356, -75.58851756031235,
+        -75.57635994999121, -75.47142171254076
+    ])
+    _, neh_energies = get_dimer_curve(
+        df_ref_neh, lambda_value=-2
+    )
+    assert np.allclose(neh_energies, neh_energies_manual)
+
+
+
+
 #######################################
 #####     Excitation Energies     #####
 #######################################
@@ -570,3 +622,5 @@ def test_n_ee_apdft_correctness():
         assert np.array_equal(
             ee_apdft_fin_diff[key], ea_apdft_fin_diff_manual[key]
         )
+
+test_oh_from_ne_from_qc()
