@@ -666,7 +666,7 @@ def get_dimer_curve(df, lambda_value=None, use_fin_diff=False, apdft_order=None)
 
 def dimer_eq(
     df_qc, system_label, system_charge, excitation_level=0, calc_type='qc',
-    use_fin_diff=False, df_apdft=None, apdft_order=2, specific_atom=0,
+    use_fin_diff=False, df_apdft=None, specific_atom=0,
     direction=None, basis_set='cc-pV5Z', n_points=2, poly_order=4,
     remove_outliers=False, zscore_cutoff=3.0, considered_lambdas=None):
     """Compute the equilbirum bond length and energy using a polynomial fit.
@@ -749,7 +749,6 @@ def dimer_eq(
             df_selection = 'apdft'
         else:
             df_selection = 'qc'
-            apdft_order = None
         df_refs = get_apdft_refs(
             df_qc, df_apdft, system_label, sys_n_electron,
             basis_set=basis_set, df_selection=df_selection,
@@ -772,14 +771,34 @@ def dimer_eq(
             if considered_lambdas is not None:
                 if ref_lambda_value not in considered_lambdas:
                     continue
+            
+            if not use_fin_diff:
+                bl_ref, e_ref = get_dimer_curve(
+                    df_ref, lambda_value=ref_lambda_value,
+                    use_fin_diff=use_fin_diff, apdft_order=None
+                )
+                bl_ref_eq, e_ref_eq = get_dimer_minimum(
+                    bl_ref, e_ref, n_points=n_points, poly_order=poly_order
+                )
+            else:
+                bl_ref_eq = []
+                e_ref_eq = []
 
-            bl_ref, e_ref = get_dimer_curve(
-                df_ref, lambda_value=ref_lambda_value,
-                use_fin_diff=use_fin_diff, apdft_order=apdft_order
-            )
-            bl_ref_eq, e_ref_eq = get_dimer_minimum(
-                bl_ref, e_ref, n_points=n_points, poly_order=poly_order
-            )
+                max_apdft_order = len(df_ref.iloc[0]['poly_coeff'])
+                for apdft_order in range(max_apdft_order):
+                    bl_ref_order, e_ref_order = get_dimer_curve(
+                        df_ref, lambda_value=ref_lambda_value,
+                        use_fin_diff=use_fin_diff, apdft_order=apdft_order
+                    )
+                    bl_ref_eq_order, e_ref_eq_order = get_dimer_minimum(
+                        bl_ref_order, e_ref_order, n_points=n_points,
+                        poly_order=poly_order
+                    )
+                    bl_ref_eq.append(bl_ref_eq_order)
+                    e_ref_eq.append(e_ref_eq_order)
+                bl_ref_eq = np.array(bl_ref_eq)
+                e_ref_eq = np.array(e_ref_eq)
+                
             bl_eq_dict[ref_label] = bl_ref_eq
             e_eq_dict[ref_label] = e_ref_eq
         

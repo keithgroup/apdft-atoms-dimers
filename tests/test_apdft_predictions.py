@@ -572,8 +572,16 @@ def test_oh_eq():
     # APDFT
     calc_type = 'alchemy'
     use_fin_diff = True
-    bl_manual = {'n.h': 0.9579026939415882, 'ne.h': 0.9328696980518535, 'f.h': 0.979168197421229}
-    e_manual = {'n.h': -75.67180585291665, 'ne.h': -75.79115628682297, 'f.h': -75.72538825462752}
+    bl_manual = {
+        'n.h': np.array([1.0378062276064202, 0.9527013676653991, 0.9579026939415882, 1.4, 1.2381960149852107]),
+        'ne.h': np.array([1.9, 0.7880503412001761, 0.9328696980518535, 1.151029440166537, 1.1]),
+        'f.h': np.array([0.9983097349392865, 0.9080132037980053, 0.979168197421229, 0.9716710513713154, 0.9653585036411326])
+    }
+    e_manual = {
+        'n.h': np.array([-55.1946280081958, -73.93537391224571, -75.67180585291665, -75.63206481933594, -21016.576668143272]),
+        'ne.h': np.array([-127.83811520113233, -68.32334222455614, -75.79115628682297, -75.78160775656083, -75.71533779593301]),
+        'f.h': np.array([-99.83306112131531, -73.8796453840478, -75.72538825462752, -75.71274196270942, -75.70977712509452])
+    }
 
     bl_test, e_test = dimer_eq(
         df_qc_dimer, system_label, system_charge, calc_type=calc_type, use_fin_diff=use_fin_diff,
@@ -582,8 +590,9 @@ def test_oh_eq():
         n_points=n_points, poly_order=poly_order, remove_outliers=remove_outliers,
         zscore_cutoff=3.0, considered_lambdas=considered_lambdas
     )
-    assert bl_test == bl_manual
-    assert e_test == e_manual
+    for key in ['n.h', 'ne.h', 'f.h']:
+        assert np.allclose(bl_test[key], bl_manual[key])
+        assert np.allclose(e_test[key], e_manual[key])
 
 
 #######################################
