@@ -638,10 +638,10 @@ def get_dimer_curve(df, lambda_value=None, use_fin_diff=False, apdft_order=None)
     :obj:`numpy.ndarray`
         All considered bond lengths available for a system.
     """
-    bond_length_order = np.argsort(df['bond_length'].values)
     if use_fin_diff:
         assert 'poly_coeff' in df.columns
         assert apdft_order is not None
+        bond_length_order = np.argsort(df['bond_length'].values)
         bond_lengths = []
         energies = []
         for idx in bond_length_order:
@@ -659,6 +659,7 @@ def get_dimer_curve(df, lambda_value=None, use_fin_diff=False, apdft_order=None)
         assert apdft_order is None
         if lambda_value is not None:
             df = df.query('lambda_value == @lambda_value')
+        bond_length_order = np.argsort(df['bond_length'].values)
         bond_lengths = df['bond_length'].values[bond_length_order]
         energies = df['electronic_energy'].values[bond_length_order]
         return np.array(bond_lengths), np.array(energies)
