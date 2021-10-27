@@ -525,6 +525,65 @@ def test_oh_from_ne_from_qc():
     assert np.allclose(neh_energies, neh_energies_manual)
 
 
+def test_oh_eq():
+    system_label = 'o.h'
+    system_charge = 0
+    basis_set = 'cc-pV5Z'
+    n_points = 2
+    poly_order = 4
+    remove_outliers = False
+    considered_lambdas = None
+
+    # Quantum chemistry
+    calc_type = 'qc'
+    use_fin_diff = False
+    bl_manual = {'o.h': 0.9675976433933339}
+    e_manual = {'o.h': -75.70699288798048}
+
+    bl_test, e_test = dimer_eq(
+        df_qc_dimer, system_label, system_charge, calc_type=calc_type, use_fin_diff=use_fin_diff,
+        df_apdft=df_apdft_dimer,
+        basis_set=basis_set,
+        n_points=n_points, poly_order=poly_order, remove_outliers=remove_outliers,
+        zscore_cutoff=3.0, considered_lambdas=considered_lambdas
+    )
+    assert bl_test == bl_manual
+    assert e_test == e_manual
+    
+
+    # Quantum alchemy
+    calc_type = 'alchemy'
+    use_fin_diff = False
+    bl_manual = {'n.h': 0.9671517955750935, 'ne.h': 0.9658039480623926, 'f.h': 0.9671057648190834}
+    e_manual = {'n.h': -75.6924387997202, 'ne.h': -75.71124458030992, 'f.h': -75.71020586967403}
+
+    bl_test, e_test = dimer_eq(
+        df_qc_dimer, system_label, system_charge, calc_type=calc_type,use_fin_diff=use_fin_diff,
+        df_apdft=df_apdft_dimer,
+        basis_set=basis_set,
+        n_points=n_points, poly_order=poly_order, remove_outliers=remove_outliers,
+        zscore_cutoff=3.0, considered_lambdas=considered_lambdas
+    )
+    assert bl_test == bl_manual
+    assert e_test == e_manual
+    
+
+
+    # APDFT
+    calc_type = 'alchemy'
+    use_fin_diff = True
+    bl_manual = {'n.h': 0.9579026939415882, 'ne.h': 0.9328696980518535, 'f.h': 0.979168197421229}
+    e_manual = {'n.h': -75.67180585291665, 'ne.h': -75.79115628682297, 'f.h': -75.72538825462752}
+
+    bl_test, e_test = dimer_eq(
+        df_qc_dimer, system_label, system_charge, calc_type=calc_type, use_fin_diff=use_fin_diff,
+        df_apdft=df_apdft_dimer,
+        basis_set=basis_set,
+        n_points=n_points, poly_order=poly_order, remove_outliers=remove_outliers,
+        zscore_cutoff=3.0, considered_lambdas=considered_lambdas
+    )
+    assert bl_test == bl_manual
+    assert e_test == e_manual
 
 
 #######################################

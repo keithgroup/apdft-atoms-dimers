@@ -664,6 +664,127 @@ def get_dimer_curve(df, lambda_value=None, use_fin_diff=False, apdft_order=None)
         energies = df['electronic_energy'].values[bond_length_order]
         return np.array(bond_lengths), np.array(energies)
 
+def dimer_eq(
+    df_qc, system_label, system_charge, excitation_level=0, calc_type='qc',
+    use_fin_diff=False, df_apdft=None, apdft_order=2, specific_atom=0,
+    direction=None, basis_set='cc-pV5Z', n_points=2, poly_order=4,
+    remove_outliers=False, zscore_cutoff=3.0, considered_lambdas=None):
+    """Compute the equilbirum bond length and energy using a polynomial fit.
+
+    Parameters
+    ----------
+    df_qc : :obj:`pandas.DataFrame`
+        Quantum chemistry dataframe.
+    system_label : :obj:`str`
+        Atoms in the system. For example, ``'f.h'``.
+    system_charge : :obj:`str`
+        Overall change in the system.
+    excitation_level : :obj:`int`, optional
+        Specifies the desired electronic state. ``0`` for ground state and
+        ``1`` for first excited state.
+    calc_type : :obj:`str`, optional
+        Specifies the method of the calculation. Can either be ``'qc'`` or
+        ``'alchemy'``. Defaults to ``'qc'``.
+    df_apdft : :obj:`pandas.DataFrame`, optional
+        APDFT dataframe. Needs to be specified if ``calc_type == 'alchemy'``.
+    apdft_order : :obj:`int`, optional
+        Taylor series order used for APDFT predictions. Defaults to ``2``.
+    basis_set : :obj:`str`, optional
+        Specifies the basis set to use for predictions. Defaults to
+        ``'cc-pV5Z'``.
+    ignore_one_row : :obj:`bool`, optional
+        Used to control errors in ``state_selection`` when there is missing
+        data (i.e., just one state). If ``True``, no errors are raised. Defaults
+        to ``True``.
+    n_points : :obj:`int`, optional
+        The number of surrounding points on either side of the minimum bond
+        length. Defaults to ``2``.
+    poly_order : :obj:`int`, optional
+        Maximum order of the fitted polynomial. Defaults to ``2``.
+    remove_outliers : :obj:`bool`, optional
+        Do not include bond lengths that are marked as outliers by their z
+        score. Defaults to ``False``.
+    zscore_cutoff : :obj:`float`, optional
+        Bond length energies that have a z score higher than this are
+        considered outliers. Defaults to ``3.0``.
+    considered_lambdas : :obj:`list`, optional
+        Allows specification of lambda values that will be considered. ``None``
+        will allow all lambdas to be valid, ``[1, -1]`` would only report
+        predictions using references using a lambda of ``1`` or ``-1``.
+    
+    Returns
+    -------
+    :obj:`dict`
+        The equilibrium bond length from all possible references. For the qc
+        method the reference is the same as the system.
+    :obj:`dict`
+        The equilibrium energy from all possible references.
+    """
+    assert calc_type in ['qc', 'alchemy']
+    df_sys = df_qc.query(
+        'system == @system_label'
+        '& charge == @system_charge'
+    )
+    multiplicity_sys = get_multiplicity(
+        df_sys.query('lambda_value == 0'), excitation_level
+    )
+    df_sys = df_sys.query('multiplicity == @multiplicity_sys')
+
+    if calc_type == 'qc':
+        df_sys = df_sys.query('lambda_value == 0')
+        bl_sys, e_sys = get_dimer_curve(df_sys, lambda_value=0)
+        bl_eq, e_eq = get_dimer_minimum(
+            bl_sys, e_sys, n_points=n_points, poly_order=poly_order,
+            remove_outliers=remove_outliers, zscore_cutoff=zscore_cutoff
+        )
+        bl_eq_dict = {system_label: bl_eq}
+        e_eq_dict = {system_label: e_eq}
+        return bl_eq_dict, e_eq_dict
+    
+    elif calc_type == 'alchemy':
+        sys_n_electron = df_sys.iloc[0]['n_electrons']
+        sys_atomic_numbers = df_sys.iloc[0]['atomic_numbers']
+        if use_fin_diff:
+            assert df_apdft is not None
+            df_selection = 'apdft'
+        else:
+            df_selection = 'qc'
+            apdft_order = None
+        df_refs = get_apdft_refs(
+            df_qc, df_apdft, system_label, sys_n_electron,
+            basis_set=basis_set, df_selection=df_selection,
+            excitation_level=excitation_level,
+            specific_atom=specific_atom, direction=direction
+        )
+
+        ref_system_labels = tuple(set(df_refs['system']))
+        bl_eq_dict = {}
+        e_eq_dict = {}
+        for i in range(len(ref_system_labels)):
+            ref_label = ref_system_labels[i]
+            df_ref = df_refs.query('system == @ref_label')
+            ref_atomic_numbers = df_ref.iloc[0]['atomic_numbers']
+            ref_lambda_value = get_lambda_value(
+                ref_atomic_numbers, sys_atomic_numbers,
+                specific_atom=specific_atom
+            )
+
+            if considered_lambdas is not None:
+                if ref_lambda_value not in considered_lambdas:
+                    continue
+
+            bl_ref, e_ref = get_dimer_curve(
+                df_ref, lambda_value=ref_lambda_value,
+                use_fin_diff=use_fin_diff, apdft_order=apdft_order
+            )
+            bl_ref_eq, e_ref_eq = get_dimer_minimum(
+                bl_ref, e_ref, n_points=n_points, poly_order=poly_order
+            )
+            bl_eq_dict[ref_label] = bl_ref_eq
+            e_eq_dict[ref_label] = e_ref_eq
+        
+        return bl_eq_dict, e_eq_dict
+
 def get_qc_change_charge_dimer(
     df_qc, target_label, delta_charge, target_initial_charge=0,
     change_signs=False, basis_set='cc-pV5Z',
