@@ -537,8 +537,8 @@ def test_oh_eq():
     # Quantum chemistry
     calc_type = 'qc'
     use_fin_diff = False
-    bl_manual = {'o.h': 0.9675976433933339}
-    e_manual = {'o.h': -75.70699288798048}
+    bl_manual = {'o.h': np.array([0.9675976433933339])}
+    e_manual = {'o.h': np.array([-75.70699288798048])}
 
     bl_test, e_test = dimer_eq(
         df_qc_dimer, system_label, system_charge, calc_type=calc_type, use_fin_diff=use_fin_diff,
@@ -554,8 +554,16 @@ def test_oh_eq():
     # Quantum alchemy
     calc_type = 'alchemy'
     use_fin_diff = False
-    bl_manual = {'n.h': 0.9671517955750935, 'ne.h': 0.9658039480623926, 'f.h': 0.9671057648190834}
-    e_manual = {'n.h': -75.6924387997202, 'ne.h': -75.71124458030992, 'f.h': -75.71020586967403}
+    bl_manual = {
+        'n.h': np.array([0.9671517955750935]),
+        'ne.h': np.array([0.9658039480623926]),
+        'f.h': np.array([0.9671057648190834])
+    }
+    e_manual = {
+        'n.h': np.array([-75.6924387997202]),
+        'ne.h': np.array([-75.71124458030992]),
+        'f.h': np.array([-75.71020586967403])
+    }
 
     bl_test, e_test = dimer_eq(
         df_qc_dimer, system_label, system_charge, calc_type=calc_type,use_fin_diff=use_fin_diff,

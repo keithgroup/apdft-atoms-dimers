@@ -664,7 +664,7 @@ def get_dimer_curve(df, lambda_value=None, use_fin_diff=False, apdft_order=None)
         energies = df['electronic_energy'].values[bond_length_order]
         return np.array(bond_lengths), np.array(energies)
 
-def dimer_eq(
+def dimer_binding_curve(
     df_qc, system_label, system_charge, excitation_level=0, calc_type='qc',
     use_fin_diff=False, df_apdft=None, specific_atom=0,
     direction=None, basis_set='cc-pV5Z', n_points=2, poly_order=4,
@@ -733,13 +733,11 @@ def dimer_eq(
     if calc_type == 'qc':
         df_sys = df_sys.query('lambda_value == 0')
         bl_sys, e_sys = get_dimer_curve(df_sys, lambda_value=0)
-        bl_eq, e_eq = get_dimer_minimum(
-            bl_sys, e_sys, n_points=n_points, poly_order=poly_order,
-            remove_outliers=remove_outliers, zscore_cutoff=zscore_cutoff
-        )
-        bl_eq_dict = {system_label: bl_eq}
-        e_eq_dict = {system_label: e_eq}
-        return bl_eq_dict, e_eq_dict
+        bl_sys = np.array(bl_sys)
+        e_sys = np.array(e_sys)
+        bl_dict = {system_label: bl_sys}
+        e_dict = {system_label: e_sys}
+        return bl_dict, e_dict
     
     elif calc_type == 'alchemy':
         sys_n_electron = df_sys.iloc[0]['n_electrons']
@@ -757,8 +755,8 @@ def dimer_eq(
         )
 
         ref_system_labels = tuple(set(df_refs['system']))
-        bl_eq_dict = {}
-        e_eq_dict = {}
+        bl_dict = {}
+        e_dict = {}
         for i in range(len(ref_system_labels)):
             ref_label = ref_system_labels[i]
             df_ref = df_refs.query('system == @ref_label')
@@ -777,12 +775,9 @@ def dimer_eq(
                     df_ref, lambda_value=ref_lambda_value,
                     use_fin_diff=use_fin_diff, apdft_order=None
                 )
-                bl_ref_eq, e_ref_eq = get_dimer_minimum(
-                    bl_ref, e_ref, n_points=n_points, poly_order=poly_order
-                )
             else:
-                bl_ref_eq = []
-                e_ref_eq = []
+                bl_ref = []
+                e_ref = []
 
                 max_apdft_order = len(df_ref.iloc[0]['poly_coeff'])
                 for apdft_order in range(max_apdft_order):
@@ -790,19 +785,106 @@ def dimer_eq(
                         df_ref, lambda_value=ref_lambda_value,
                         use_fin_diff=use_fin_diff, apdft_order=apdft_order
                     )
-                    bl_ref_eq_order, e_ref_eq_order = get_dimer_minimum(
-                        bl_ref_order, e_ref_order, n_points=n_points,
-                        poly_order=poly_order
-                    )
-                    bl_ref_eq.append(bl_ref_eq_order)
-                    e_ref_eq.append(e_ref_eq_order)
-                bl_ref_eq = np.array(bl_ref_eq)
-                e_ref_eq = np.array(e_ref_eq)
+                    bl_ref.append(bl_ref_order)
+                    e_ref.append(e_ref_order)
+                bl_ref = np.array(bl_ref)
+                e_ref = np.array(e_ref)
                 
-            bl_eq_dict[ref_label] = bl_ref_eq
-            e_eq_dict[ref_label] = e_ref_eq
+            bl_dict[ref_label] = bl_ref
+            e_dict[ref_label] = e_ref
         
-        return bl_eq_dict, e_eq_dict
+        return bl_dict, e_dict
+
+def dimer_eq(
+    df_qc, system_label, system_charge, excitation_level=0, calc_type='qc',
+    use_fin_diff=False, df_apdft=None, specific_atom=0,
+    direction=None, basis_set='cc-pV5Z', n_points=2, poly_order=4,
+    remove_outliers=False, zscore_cutoff=3.0, considered_lambdas=None):
+    """Compute the equilbirum bond length and energy using a polynomial fit.
+
+    Parameters
+    ----------
+    df_qc : :obj:`pandas.DataFrame`
+        Quantum chemistry dataframe.
+    system_label : :obj:`str`
+        Atoms in the system. For example, ``'f.h'``.
+    system_charge : :obj:`str`
+        Overall change in the system.
+    excitation_level : :obj:`int`, optional
+        Specifies the desired electronic state. ``0`` for ground state and
+        ``1`` for first excited state.
+    calc_type : :obj:`str`, optional
+        Specifies the method of the calculation. Can either be ``'qc'`` or
+        ``'alchemy'``. Defaults to ``'qc'``.
+    df_apdft : :obj:`pandas.DataFrame`, optional
+        APDFT dataframe. Needs to be specified if ``calc_type == 'alchemy'``.
+    apdft_order : :obj:`int`, optional
+        Taylor series order used for APDFT predictions. Defaults to ``2``.
+    basis_set : :obj:`str`, optional
+        Specifies the basis set to use for predictions. Defaults to
+        ``'cc-pV5Z'``.
+    ignore_one_row : :obj:`bool`, optional
+        Used to control errors in ``state_selection`` when there is missing
+        data (i.e., just one state). If ``True``, no errors are raised. Defaults
+        to ``True``.
+    n_points : :obj:`int`, optional
+        The number of surrounding points on either side of the minimum bond
+        length. Defaults to ``2``.
+    poly_order : :obj:`int`, optional
+        Maximum order of the fitted polynomial. Defaults to ``2``.
+    remove_outliers : :obj:`bool`, optional
+        Do not include bond lengths that are marked as outliers by their z
+        score. Defaults to ``False``.
+    zscore_cutoff : :obj:`float`, optional
+        Bond length energies that have a z score higher than this are
+        considered outliers. Defaults to ``3.0``.
+    considered_lambdas : :obj:`list`, optional
+        Allows specification of lambda values that will be considered. ``None``
+        will allow all lambdas to be valid, ``[1, -1]`` would only report
+        predictions using references using a lambda of ``1`` or ``-1``.
+    
+    Returns
+    -------
+    :obj:`dict`
+        The equilibrium bond length from all possible references. For the qc
+        method the reference is the same as the system.
+    :obj:`dict`
+        The equilibrium energy from all possible references.
+    """
+    assert calc_type in ['qc', 'alchemy']
+    
+    bl_dict, e_dict = dimer_binding_curve(
+        df_qc, system_label, system_charge, excitation_level=excitation_level,
+        calc_type=calc_type, use_fin_diff=use_fin_diff, df_apdft=df_apdft,
+        specific_atom=specific_atom, direction=direction, basis_set=basis_set,
+        n_points=n_points, poly_order=poly_order,
+        remove_outliers=remove_outliers, zscore_cutoff=zscore_cutoff,
+        considered_lambdas=considered_lambdas
+    )
+
+    bl_eq_dict = {}
+    e_eq_dict ={}
+    for sys_label in bl_dict.keys():
+        bl_sys = bl_dict[sys_label]
+        e_sys = e_dict[sys_label]
+
+        if len(bl_sys.shape) == 1:
+            bl_sys = np.array([bl_sys])
+            e_sys = np.array([e_sys])
+
+        bl_eq = []
+        e_eq = []
+        for i in range(len(bl_sys)):
+            bl_eq_i, e_eq_i = get_dimer_minimum(
+                bl_sys[i], e_sys[i], n_points=n_points, poly_order=poly_order,
+                remove_outliers=remove_outliers, zscore_cutoff=zscore_cutoff
+            )
+            bl_eq.append(bl_eq_i)
+            e_eq.append(e_eq_i)
+        bl_eq_dict[sys_label] = np.array(bl_eq)
+        e_eq_dict[sys_label] = np.array(e_eq)
+    
+    return bl_eq_dict, e_eq_dict
 
 def get_qc_change_charge_dimer(
     df_qc, target_label, delta_charge, target_initial_charge=0,
