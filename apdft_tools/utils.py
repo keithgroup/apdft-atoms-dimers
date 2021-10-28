@@ -456,6 +456,7 @@ def fit_dimer_poly(bond_lengths, energies, n_points=2, poly_order=4,
     e_min_idx = np.argmin(energies)
     slice_start = e_min_idx - n_points
     slice_end = e_min_idx + 1 + n_points
+    if slice_start < 0: slice_start = 0
     bond_lengths_for_fit = bond_lengths[slice_start:slice_end]
     energies_for_fit = energies[slice_start:slice_end]
 
