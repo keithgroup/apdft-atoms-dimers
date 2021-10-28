@@ -55,7 +55,7 @@ diis_damp_prelim = 0.5
 cores = 6
 days = 3
 
-calc_dir = f'/home/alex/Dropbox/keith/projects/apdft/pyscf-apdft-calc-prep'
+calc_dir = f'./prepared-calcs'
 os.makedirs(calc_dir, exist_ok=True)
 
 apdft_calcs_all = {
