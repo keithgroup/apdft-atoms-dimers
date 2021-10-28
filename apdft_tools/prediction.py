@@ -293,7 +293,7 @@ def get_qc_change_charge(
         Overall change in the initial target system.
     target_initial_charge : :obj:`int`
         Specifies the initial charge state of the target system. For example,
-        the first ionization potential is the energy difference going from
+        the first ionization energy is the energy difference going from
         charge ``0 -> 1``, so ``target_initial_charge`` must equal ``0``.
 
     Returns
@@ -391,7 +391,7 @@ def get_apdft_change_charge(
         Overall change in the initial target system.
     target_initial_charge : :obj:`int`
         Specifies the initial charge state of the target system. For example,
-        the first ionization potential is the energy difference going from
+        the first ionization energy is the energy difference going from
         charge ``0 -> 1``, so ``target_initial_charge`` must equal ``0``.
     change_signs : :obj:`bool`, optional
         Multiply all predictions by -1. Used to correct the sign for computing
@@ -903,7 +903,7 @@ def get_qc_change_charge_dimer(
         Overall change in the initial target system.
     target_initial_charge : :obj:`int`
         Specifies the initial charge state of the target system. For example,
-        the first ionization potential is the energy difference going from
+        the first ionization energy is the energy difference going from
         charge ``0 -> 1``, so ``target_initial_charge`` must equal ``0``.
     change_signs : :obj:`bool`, optional
         Multiply all predictions by -1. Used to correct the sign for computing
@@ -1012,7 +1012,7 @@ def get_apdft_change_charge_dimer(
         Overall change in the initial target system.
     target_initial_charge : :obj:`int`
         Specifies the initial charge state of the target system. For example,
-        the first ionization potential is the energy difference going from
+        the first ionization energy is the energy difference going from
         charge ``0 -> 1``, so ``target_initial_charge`` must equal ``0``.
     change_signs : :obj:`bool`, optional
         Multiply all predictions by -1. Used to correct the sign for computing

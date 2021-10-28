@@ -67,10 +67,10 @@ def test_poly_prediction():
     assert poly_pred_lambda1 == poly_pred_lambda1_manual
 
 #########################################
-#####     Ionization Potentials     #####
+#####     ionization energies     #####
 #########################################
 
-def test_n_ip1_qc_correctness():
+def test_n_ie1_qc_correctness():
     target_label = 'n'
     delta_charge = 1
     target_initial_charge = 0
@@ -80,17 +80,17 @@ def test_n_ip1_qc_correctness():
 
     e_chrg0_ground = -54.56266526988731
     e_chrg1_ground = -54.02830363594568
-    ip1_manual = e_chrg1_ground - e_chrg0_ground
+    ie1_manual = e_chrg1_ground - e_chrg0_ground
 
-    ip1_df = get_qc_change_charge(
+    ie1_df = get_qc_change_charge(
         df_qc_atom, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
         force_same_method=force_same_method
     )
-    assert ip1_manual == ip1_df
+    assert ie1_manual == ie1_df
 
-def test_n_ip1_apdft_correctness():
+def test_n_ie1_apdft_correctness():
     target_label = 'n'
     delta_charge = 1
     target_initial_charge = 0
@@ -106,16 +106,16 @@ def test_n_ip1_apdft_correctness():
     e_chrg0_ground_oref = -54.56757847776784  # o.chrg1.mult4; lambda = -1
     e_chrg1_ground_oref = -54.0331576002892  # o.chrg2.mult3; lambda = -1
 
-    ip1_manual_bref = e_chrg1_ground_bref - e_chrg0_ground_bref  # 0.5324136009831903
-    ip1_manual_cref = e_chrg1_ground_cref - e_chrg0_ground_cref  # 0.5339621448060043
-    ip1_manual_oref = e_chrg1_ground_oref - e_chrg0_ground_oref  # 0.5344208774786381
-    ip1_manual = {
-        'b': ip1_manual_bref, 'c': ip1_manual_cref, 'o': ip1_manual_oref
+    ie1_manual_bref = e_chrg1_ground_bref - e_chrg0_ground_bref  # 0.5324136009831903
+    ie1_manual_cref = e_chrg1_ground_cref - e_chrg0_ground_cref  # 0.5339621448060043
+    ie1_manual_oref = e_chrg1_ground_oref - e_chrg0_ground_oref  # 0.5344208774786381
+    ie1_manual = {
+        'b': ie1_manual_bref, 'c': ie1_manual_cref, 'o': ie1_manual_oref
     }
 
     # Alchemical predictions
     use_fin_diff = False
-    ip1_apdft = get_apdft_change_charge(
+    ie1_apdft = get_apdft_change_charge(
         df_qc_atom, df_apdft_atom, target_label, delta_charge,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
         basis_set=basis_set, use_fin_diff=use_fin_diff,
@@ -123,12 +123,12 @@ def test_n_ip1_apdft_correctness():
         lambda_direction=lambda_direction
     )
 
-    ip1_apdft_keys = [i for i in ip1_apdft.keys()]
-    ip1_apdft_keys.sort()
-    assert ip1_apdft_keys == ['b', 'c', 'o']
+    ie1_apdft_keys = [i for i in ie1_apdft.keys()]
+    ie1_apdft_keys.sort()
+    assert ie1_apdft_keys == ['b', 'c', 'o']
     for key in ['b', 'c', 'o']:
         assert np.array_equal(
-            ip1_apdft[key], np.array([ip1_manual[key]], dtype='float64')
+            ie1_apdft[key], np.array([ie1_manual[key]], dtype='float64')
         )
 
     # Finite differences
@@ -138,7 +138,7 @@ def test_n_ip1_apdft_correctness():
     poly_coef_chrg1_ground_cref = np.array([-37.819523645273655, -14.692113455939193, -1.5080067837658362, 0.008594331172654771, 0.0012684372071210721])  # c.chrg0.mult3; lambda = 1
     poly_coef_chrg0_ground_oref = np.array([-74.5384357061857, -21.60310587998424, -1.6286223981865078, 0.004562114241934977, 0.0013357611313343416])  # o.chrg1.mult4; lambda = -1
     poly_coef_chrg1_ground_oref = np.array([-73.2470934104361, -20.716783121350346, -1.5003953162562311, 0.0036310462784664797, 0.001525535253676935])  # o.chrg2.mult3; lambda = -1
-    ip1_apdft_fin_diff_manual = {
+    ie1_apdft_fin_diff_manual = {
         'b': np.array(
             [calc_apdft_pred(poly_coef_chrg1_ground_bref, i, 2)[0] - calc_apdft_pred(poly_coef_chrg0_ground_bref, i, 2)[0] for i in range(0, 4+1)]
         ),
@@ -151,7 +151,7 @@ def test_n_ip1_apdft_correctness():
     }
 
     use_fin_diff = True
-    ip1_apdft_fin_diff = get_apdft_change_charge(
+    ie1_apdft_fin_diff = get_apdft_change_charge(
         df_qc_atom, df_apdft_atom, target_label, delta_charge,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
         basis_set=basis_set, use_fin_diff=use_fin_diff,
@@ -159,16 +159,16 @@ def test_n_ip1_apdft_correctness():
         lambda_direction=lambda_direction
     )
 
-    ip1_apdft_fin_diff_keys = [i for i in ip1_apdft_fin_diff.keys()]
-    ip1_apdft_fin_diff_keys.sort()
-    assert ip1_apdft_fin_diff_keys == ['b', 'c', 'o']
+    ie1_apdft_fin_diff_keys = [i for i in ie1_apdft_fin_diff.keys()]
+    ie1_apdft_fin_diff_keys.sort()
+    assert ie1_apdft_fin_diff_keys == ['b', 'c', 'o']
     for key in ['b', 'c', 'o']:
         assert np.array_equal(
-            ip1_apdft_fin_diff[key], ip1_apdft_fin_diff_manual[key]
+            ie1_apdft_fin_diff[key], ie1_apdft_fin_diff_manual[key]
         )
 
 """
-def test_ch_ip1_qc_correctness():
+def test_ch_ie1_qc_correctness():
     target_label = 'c.h'
     delta_charge = 1
     target_initial_charge = 0
@@ -179,19 +179,19 @@ def test_ch_ip1_qc_correctness():
 
     e_chrg0_ground = -38.45347656174365
     e_chrg1_ground = -38.06281576385865
-    ip1_manual = e_chrg1_ground - e_chrg0_ground
+    ie1_manual = e_chrg1_ground - e_chrg0_ground
     
-    ip1_df = get_qc_change_charge(
+    ie1_df = get_qc_change_charge(
         df_qc_dimer, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
         force_same_method=force_same_method,
         bond_length=bond_length
     )
-    assert ip1_manual == ip1_df
+    assert ie1_manual == ie1_df
 """
 
-def test_ch_ip1_qc_dimer_correctness():
+def test_ch_ie1_qc_dimer_correctness():
     target_label = 'c.h'
     delta_charge = 1
     change_signs = False
@@ -220,11 +220,11 @@ def test_ch_ip1_qc_dimer_correctness():
         bond_lengths_chrg1, e_chrg1, n_points=n_points, poly_order=poly_order,
         remove_outliers=False, zscore_cutoff=3.0
     )
-    ip1_manual = e_chrg1_eq - e_chrg0_eq  # 0.3904478904319859
+    ie1_manual = e_chrg1_eq - e_chrg0_eq  # 0.3904478904319859
     """
-    ip1_manual = 0.3904478904319859
+    ie1_manual = 0.3904478904319859
 
-    ip1_qc = get_qc_change_charge_dimer(
+    ie1_qc = get_qc_change_charge_dimer(
         df_qc_dimer, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
@@ -232,7 +232,7 @@ def test_ch_ip1_qc_dimer_correctness():
         remove_outliers=remove_outliers
     )
     
-    assert np.allclose(np.array(ip1_qc), np.array(ip1_manual))
+    assert np.allclose(np.array(ie1_qc), np.array(ie1_manual))
 
 def test_bond_lengths_apdft_ch_from_bh():
     lambda_value = 1
@@ -255,7 +255,7 @@ def test_bond_lengths_apdft_ch_from_bh():
     assert np.array_equal(bond_lengths_manual, bond_lengths)
     assert np.allclose(energies_manual, energies)
 
-def test_ch_ip1_apdft_dimer_correctness():
+def test_ch_ie1_apdft_dimer_correctness():
     target_label = 'c.h'
     delta_charge = 1
     change_signs = False
@@ -272,11 +272,11 @@ def test_ch_ip1_apdft_dimer_correctness():
 
     # Alchemical predictions.
     use_fin_diff = False
-    ip1_manual = {
+    ie1_manual = {
         'b.h': np.array([0.36382197443953146]),
         'n.h': np.array([0.3773032544777948])
     }
-    ip1_apdft = get_apdft_change_charge_dimer(
+    ie1_apdft = get_apdft_change_charge_dimer(
         df_qc_dimer, df_apdft_dimer, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
@@ -285,12 +285,12 @@ def test_ch_ip1_apdft_dimer_correctness():
         poly_order=poly_order, n_points=n_points
     )
 
-    ip1_apdft_keys = [i for i in ip1_apdft.keys()]
-    ip1_apdft_keys.sort()
-    assert ip1_apdft_keys == ['b.h', 'n.h']
+    ie1_apdft_keys = [i for i in ie1_apdft.keys()]
+    ie1_apdft_keys.sort()
+    assert ie1_apdft_keys == ['b.h', 'n.h']
     for key in ['b.h', 'n.h']:
         assert np.allclose(
-            ip1_apdft[key], ip1_manual[key]
+            ie1_apdft[key], ie1_manual[key]
         )
     
     # Taylor series predictions.
@@ -327,7 +327,7 @@ def test_ch_ip1_apdft_dimer_correctness():
         bh_bond_lengths_final, bh_e_final, n_points=n_points, poly_order=poly_order,
         remove_outliers=remove_outliers, zscore_cutoff=3.0
     )
-    ip1_bh = bh_e_final_eq - bh_e_initial_eq
+    ie1_bh = bh_e_final_eq - bh_e_initial_eq
 
 
     nh_bond_lengths_initial, nh_e_initial = get_dimer_curve(
@@ -344,9 +344,9 @@ def test_ch_ip1_apdft_dimer_correctness():
         nh_bond_lengths_final, nh_e_final, n_points=n_points, poly_order=poly_order,
         remove_outliers=remove_outliers, zscore_cutoff=3.0
     )
-    ip1_nh = nh_e_final_eq - nh_e_initial_eq
+    ie1_nh = nh_e_final_eq - nh_e_initial_eq
     """
-    ip1_manual = {
+    ie1_manual = {
         'b.h': np.array(
             [-0.00189905333453666, 0.28264753831965805, 0.38318080118576603, 0.406652661093311, 0.4339253282625464]
         ),
@@ -355,7 +355,7 @@ def test_ch_ip1_apdft_dimer_correctness():
         )
     }
 
-    ip1_apdft = get_apdft_change_charge_dimer(
+    ie1_apdft = get_apdft_change_charge_dimer(
         df_qc_dimer, df_apdft_dimer, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
@@ -364,12 +364,12 @@ def test_ch_ip1_apdft_dimer_correctness():
         poly_order=poly_order, n_points=n_points, remove_outliers=remove_outliers
     )
 
-    ip1_apdft_keys = [i for i in ip1_apdft.keys()]
-    ip1_apdft_keys.sort()
-    assert ip1_apdft_keys == ['b.h', 'n.h']
+    ie1_apdft_keys = [i for i in ie1_apdft.keys()]
+    ie1_apdft_keys.sort()
+    assert ie1_apdft_keys == ['b.h', 'n.h']
     for key in ['b.h', 'n.h']:
         assert np.allclose(
-            ip1_apdft[key], ip1_manual[key]
+            ie1_apdft[key], ie1_manual[key]
         )
 
 
@@ -466,9 +466,9 @@ def test_n_ea_apdft_correctness():
         lambda_specific_atom=lambda_specific_atom,
         lambda_direction=lambda_direction
     )
-    ip1_apdft_fin_diff_keys = [i for i in ea_apdft_fin_diff.keys()]
-    ip1_apdft_fin_diff_keys.sort()
-    assert ip1_apdft_fin_diff_keys == ['c', 'f', 'o']
+    ie1_apdft_fin_diff_keys = [i for i in ea_apdft_fin_diff.keys()]
+    ie1_apdft_fin_diff_keys.sort()
+    assert ie1_apdft_fin_diff_keys == ['c', 'f', 'o']
     for key in ['c', 'f', 'o']:
         assert np.array_equal(
             ea_apdft_fin_diff[key], ea_apdft_fin_diff_manual[key]
