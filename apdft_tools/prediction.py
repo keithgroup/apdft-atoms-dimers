@@ -1181,11 +1181,10 @@ def get_apdft_change_charge_dimer(
                 ref_initial_qc, lambda_value=lambda_initial, use_fin_diff=False,
                 apdft_order=None
             )
-            _, e_initial = get_dimer_minimum(
+            _, e_target_initial = get_dimer_minimum(
                 bond_lengths_initial, energies_initial, n_points=n_points,
                 remove_outliers=remove_outliers
             )
-            e_target_initial = ref_initial_qc.iloc[0]['electronic_energy']
             
             chrg_ref_final = ref_final.iloc[0]['charge']
             mult_ref_final = ref_final.iloc[0]['multiplicity']

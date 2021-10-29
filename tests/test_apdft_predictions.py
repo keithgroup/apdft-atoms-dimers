@@ -273,8 +273,8 @@ def test_ch_ie1_apdft_dimer_correctness():
     # Alchemical predictions.
     use_fin_diff = False
     ie1_manual = {
-        'b.h': np.array([0.36382197443953146]),
-        'n.h': np.array([0.3773032544777948])
+        'b.h': np.array([0.3903041968078611]),
+        'n.h': np.array([0.38959475994708725])
     }
     ie1_apdft = get_apdft_change_charge_dimer(
         df_qc_dimer, df_apdft_dimer, target_label, delta_charge,
