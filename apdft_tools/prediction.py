@@ -1168,7 +1168,7 @@ def get_apdft_change_charge_dimer(
                     e_diff *= -1
                 order_preds.append(e_diff)
             predictions[system] = np.array(order_preds)
-        else:
+        if not use_fin_diff or compute_difference == True:
             chrg_ref_initial = ref_initial.iloc[0]['charge']
             mult_ref_initial = ref_initial.iloc[0]['multiplicity']
             ref_initial_qc = df_qc.query(
