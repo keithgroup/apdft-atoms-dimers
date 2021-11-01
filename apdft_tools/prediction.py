@@ -119,7 +119,7 @@ def calc_apdft_pred(poly_coeffs, order, lambda_values):
 def get_apdft_pred(
     df_qc, df_apdft, system_label, charge=0, excitation_level=0,
     lambda_values=[-1, 0, 1], basis_set='aug-cc-pVQZ', ignore_one_row=True):
-    """APDFT or APDFTn predictions of a target system.
+    """APDFTn predictions of a target system.
 
     Parameters
     ----------
