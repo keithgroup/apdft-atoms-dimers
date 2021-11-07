@@ -195,7 +195,7 @@ def get_apdft_pred(
 def get_apdft_refs(
     df_qc, df_apdft, target_label, target_n_electrons, basis_set='aug-cc-pVQZ',
     df_selection='apdft', excitation_level=None, specific_atom=None,
-    direction=None):
+    direction=None, considered_lambdas=None):
     """A dataframe with all possible APDFT references for a given target system.
 
     Parameters
@@ -258,15 +258,37 @@ def get_apdft_refs(
                 drop_filter = (df_ref['system'] == sys_label) \
                     & ([df_ref['lambda_value']] != sys_lambda_value)
                 df_ref = df_ref[~drop_filter]
+    
+    if considered_lambdas is not None:
+        refs_sys = tuple(set(df_ref['system']))
+        target_atomic_numbers = df_qc.query('system == @target_label').iloc[0]['atomic_numbers']
+        for i in range(len(refs_sys)):
+            sys_label = refs_sys[i]
+            ref_sys = df_ref.query('system == @sys_label')
+            ref_atomic_numbers = ref_sys.iloc[0]['atomic_numbers']
+            lambda_value = get_lambda_value(
+                ref_atomic_numbers, target_atomic_numbers,
+                specific_atom=specific_atom, direction=direction
+            )
+
+            if lambda_value not in considered_lambdas:
+                drop_filter = (df_ref['system'] == sys_label)
+                df_ref = df_ref[~drop_filter]
 
     if excitation_level is not None:
         assert excitation_level in [0, 1]
         refs_sys = tuple(set(df_ref['system']))
         for i in range(len(refs_sys)):
             sys_label = refs_sys[i]
-            df_refs_sys = df_ref.query('system == @sys_label')
+
+            # Gets multiplicity
+            df_mult = df_qc.query(
+                'system == @sys_label'
+                '& n_electrons == @target_n_electrons'
+                '& basis_set == @basis_set'
+            )
             ref_sys_multiplicity = get_multiplicity(
-                df_refs_sys, excitation_level
+                df_mult, excitation_level
             )
             drop_filter = (df_ref['system'] == sys_label) \
                 & ([df_ref['multiplicity']] != ref_sys_multiplicity)
