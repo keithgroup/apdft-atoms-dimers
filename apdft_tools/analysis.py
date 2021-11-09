@@ -27,7 +27,8 @@ from apdft_tools.prediction import *
 
 def get_alchemical_errors(
     df_qc, n_electrons, excitation_level=0,
-    basis_set='aug-cc-pVQZ', bond_length=None, return_energies=False):
+    basis_set='aug-cc-pVQZ', bond_length=None, return_energies=False,
+    energy_type='total'):
     """
     
     Parameters
@@ -36,6 +37,10 @@ def get_alchemical_errors(
 
     return_energies : :obj:`bool`, optional
         Return APDFT energies instead of errors.
+    energy_type : :obj:`str`, optional
+        Species the energy type/contributions to examine. Can be ``'total'``
+        energies, ``'hf'`` for Hartree-Fock contributions, or ``'correlation'``
+        energies.
     
     Returns
     -------
@@ -47,6 +52,13 @@ def get_alchemical_errors(
         the nuclear charge of a reference system (e.g., c -> n). The rows and
         columns are in the same order as the state labels.
     """
+    if energy_type == 'total':
+        df_energy_type = 'electronic_energy'
+    elif energy_type == 'hf':
+        df_energy_type = 'hf_energy'
+    elif energy_type == 'correlation':
+        df_energy_type = 'correlation_energy'
+
     df_alch_pes = df_qc[(df_qc.n_electrons == n_electrons) & (df_qc.basis_set == basis_set)]
     sys_labels = list(set(df_alch_pes.system.values))
 
@@ -81,14 +93,14 @@ def get_alchemical_errors(
             sys_atomic_numbers.append(atomic_numbers[0])
         state_mult = df_state.iloc[0]['multiplicity']
         state_chrg = df_state.iloc[0]['charge']
-        true_energies.append(df_state.iloc[0]['electronic_energy'])
+        true_energies.append(df_state.iloc[0][df_energy_type])
         system_labels.append(sys_label)
         calc_labels.append(f'{sys_label}.chrg{state_chrg}.mult{state_mult}')
 
         df_sys = df_sys.query('multiplicity == @state_mult')
 
         lambda_values.append(df_sys.lambda_value.values)
-        energies.append(df_sys.electronic_energy.values)
+        energies.append(df_sys[df_energy_type].values)
     sys_atomic_numbers = np.array(sys_atomic_numbers)
     lambda_values = np.array(lambda_values)
     true_energies = np.array(true_energies)
