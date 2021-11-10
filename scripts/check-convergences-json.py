@@ -26,11 +26,12 @@ import os
 import json
 import numpy as np
 
-only_filename = False
+only_filename = True
 print_converged = False
-only_not_fin_diff = True
+only_fin_diff_lambdas = False  # Only check calculations for lambdas used in finite differences.
 max_fin_diff = 0.02
-data_dir = '/home/alex/repos/apdft-atoms-data'
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+data_dir = '../../apdft-atoms-data/data'
 
 def get_files(path, expression, recursive=True):
     """Returns paths to all files in a given directory that matches a provided
@@ -100,6 +101,8 @@ def main():
     
     # Finds all QCJSON files in data directory.
     all_output_paths = get_files(data_dir, '.json', recursive=True)
+    if len(all_output_paths) == 0:
+        raise ValueError('No JSON files found.')
     did_not_converge = []
     did_converge = []
 
@@ -109,7 +112,7 @@ def main():
         
         json_dict = read_json(json_path)
         l_values = json_dict['apdft_lambdas']
-        if only_not_fin_diff:
+        if only_fin_diff_lambdas:
             bool_idx = [True if abs(i) <= max_fin_diff else False for i in l_values]
         else:
             bool_idx = [True for _ in l_values]
@@ -131,7 +134,7 @@ def main():
         
     print('The following calculations did not all converge:\n')
     for i in did_not_converge: print(i)
-    print(f'\n{len(did_not_converge)} did not converge.')
+    print(f'\n{len(did_not_converge)} did not converge at every considered lambda.')
     if print_converged:
         print(f'\n\nThe following {len(did_converge)} calculations converged:')
         for i in did_converge: print(i)

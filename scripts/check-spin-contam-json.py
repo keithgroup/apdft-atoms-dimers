@@ -30,7 +30,8 @@ from apdft_tools.utils import calc_spin
 only_filename = True
 print_converged = False
 spin_deviation = 0.1
-data_dir = '/home/alex/repos/apdft-dimers-data'
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+data_dir = '../../apdft-dimers-data/data'
 
 def get_files(path, expression, recursive=True):
     """Returns paths to all files in a given directory that matches a provided
