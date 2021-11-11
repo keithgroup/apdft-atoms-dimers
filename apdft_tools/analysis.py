@@ -139,6 +139,124 @@ def get_alchemical_errors(
 
     return [calc_labels[i] for i in sort_z], sys_energies
 
+def get_apdft_errors(
+    df_qc, df_apdft, n_electrons, apdft_order=2, excitation_level=0,
+    basis_set='aug-cc-pV5Z', return_energies=False,
+    specific_atom=None, direction=None):
+    """
+
+    Only atoms are supported.
+    
+    Parameters
+    ----------
+    apdft_order : :obj:`int`, optional
+        Desired order of APDFT to use. Defaults to ``2``.
+    return_energies : :obj:`bool`, optional
+        Return APDFT energies instead of errors.
+    
+    Returns
+    -------
+    :obj:`list` [:obj:`str`]
+        System and state labels (e.g., `'c.chrg0.mult1'`) in the order of
+        increasing atomic number.
+    :obj:`numpy.ndarray`
+        Alchemical energy errors due to modeling a target system by changing
+        the nuclear charge of a reference system (e.g., c -> n). The rows and
+        columns are in the same order as the state labels.
+    """
+
+    df_alch_pes = df_qc.query(
+        'n_electrons == @n_electrons & basis_set == @basis_set'
+    )
+    mult_sys_test = df_alch_pes.iloc[0]['system']
+    state_mult = get_multiplicity(
+        df_alch_pes.query('system == @mult_sys_test'), excitation_level,
+        ignore_one_row=False
+    )
+    df_alch_pes = df_alch_pes.query('multiplicity == @state_mult')
+
+    df_sys_info = df_alch_pes.query('lambda_value == 0.0')
+    charge_sort = np.argsort(df_sys_info['charge'].values)  # most negative to most positive
+    sys_labels = df_sys_info['system'].values[charge_sort]
+    sys_atomic_numbers = df_sys_info['atomic_numbers'].values[charge_sort]
+    sys_charges = df_sys_info['charge'].values[charge_sort]
+
+    if len(df_qc.iloc[0]['atomic_numbers']) == 2:
+        raise ValueError('Dimers are not supported.')
+
+    # Gets data.
+    calc_labels = []
+    lambda_values = []
+    alchemical_energies = []
+    apdft_energies = []
+
+    # Goes through all possible reference systems and calculates APDFTn predictions
+    # then computes the alchemical predictions and errors.
+    # Loops through all systems.
+    for i in range(len(sys_labels)):
+        sys_alchemical_energies = []
+        sys_apdft_energies = []
+
+        target_label = sys_labels[i]
+        target_atomic_numbers = sys_atomic_numbers[i]
+        target_charge = sys_charges[i]
+        calc_labels.append(f'{target_label}.chrg{target_charge}.mult{state_mult}')
+
+        df_apdft_ref = get_apdft_refs(
+            df_qc, df_apdft, target_label, n_electrons, basis_set=basis_set,
+            df_selection='apdft', excitation_level=excitation_level, specific_atom=specific_atom,
+            direction=direction, considered_lambdas=None
+        )
+        
+        charge_sort = np.argsort(df_apdft_ref['charge'].values)  # most negative to most positive
+
+        # Loops through all APDFT references.
+        for j in charge_sort:
+            apdft_row = df_apdft_ref.iloc[j]
+            ref_sys_label = apdft_row['system']
+            ref_atomic_numbers = apdft_row['atomic_numbers']
+            ref_charge = apdft_row['charge']
+            ref_poly_coeffs = apdft_row['poly_coeff']
+
+            lambda_value = get_lambda_value(
+                ref_atomic_numbers, target_atomic_numbers, specific_atom=specific_atom,
+                direction=direction
+            )
+
+            # Predicted alchemical energy.
+            sys_alchemical_energies.append(
+                get_qc_pred(
+                    df_qc, ref_sys_label, ref_charge, excitation_level=excitation_level,
+                    lambda_values=[lambda_value], basis_set=basis_set,
+                    ignore_one_row=True
+                )[0]
+            )
+
+            # APDFT prediction
+            sys_apdft_energies.append(
+                calc_apdft_pred(
+                    ref_poly_coeffs, apdft_order, lambda_value
+                )[0]
+            )
+        
+        # Adds in alchemical energy and APDFT reference
+        sys_alchemical_energies.insert(i, np.nan)
+        sys_apdft_energies.insert(i, np.nan)
+
+        alchemical_energies.append(sys_alchemical_energies)
+        apdft_energies.append(sys_apdft_energies)
+    alchemical_energies = np.array(alchemical_energies)
+    apdft_energies = np.array(apdft_energies)
+
+    e_return = apdft_energies
+    if not return_energies:
+        e_return -= alchemical_energies
+    
+    # Converts nan to 0
+    e_return = np.nan_to_num(e_return)
+
+    return calc_labels, e_return
+
 def get_qc_binding_curve(
     df_qc, sys_label, charge, excitation_level=0, basis_set='aug-cc-pVQZ',
     lambda_value=0

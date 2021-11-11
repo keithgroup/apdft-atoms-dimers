@@ -63,25 +63,23 @@ def get_qc_pred(
         is_dimer = True
     else:
         is_dimer = False
-    
-    if not isinstance(lambda_values, np.ndarray) \
-    or not isinstance(lambda_values, list):
+    if not isinstance(lambda_values, np.ndarray) and not isinstance(lambda_values, list):
         lambda_values = np.array([lambda_values])
+    
+    ref_qc = df_qc.query(
+        'system == @system_label'
+        '& charge == @charge'
+        '& basis_set == @basis_set'
+        '& lambda_value in @lambda_values'
+    )
     
     # Selects state if required.
     if len(set(df_qc['multiplicity'].values)) > 1:
         assert excitation_level is not None
-        multiplicity = get_multiplicity(
-            df_qc, excitation_level, ignore_one_row=ignore_one_row
+        sys_mult = get_multiplicity(
+            ref_qc, excitation_level, ignore_one_row=ignore_one_row
         )
-
-    ref_qc = df_qc[
-        (df_qc.system == system_label)
-        & (df_qc.charge == charge)
-        & (df_qc.multiplicity == multiplicity)
-        & (df_qc.basis_set == basis_set)
-        & (df_qc.lambda_value.isin(lambda_values))
-    ]
+        ref_qc = ref_qc.query('multiplicity == @sys_mult')
 
     energies = np.zeros(len(lambda_values))
     for i in range(len(lambda_values)):
