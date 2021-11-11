@@ -27,11 +27,15 @@ import json
 import numpy as np
 from apdft_tools.utils import calc_spin
 
-only_filename = True
-print_converged = False
-spin_deviation = 0.1
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
 data_dir = '../../apdft-dimers-data/data'
+
+only_filename = True  # Instead of printing the absolute path, we print just the filename.
+spin_deviation = 0.1   # Minimum spin deviation to consider "contaminated".
+
+
+###   SCRIPT   ###
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def get_files(path, expression, recursive=True):
     """Returns paths to all files in a given directory that matches a provided

@@ -26,12 +26,25 @@ import os
 import json
 import numpy as np
 
-only_filename = True
-print_converged = False
-only_fin_diff_lambdas = False  # Only check calculations for lambdas used in finite differences.
-max_fin_diff = 0.02
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+
 data_dir = '../../apdft-atoms-data/data'
+
+only_filename = True  # Instead of printing the absolute path, we print just the filename.
+print_converged = False  # Prints all calculations that are converged.
+
+# Lambda selection. Allows you to only check certain lambdas for convergence.
+# Note that both options can be True at the same time.
+only_fin_diff_lambdas = True  # Only check calculations for lambdas used in finite differences.
+only_int_lambdas = True  # Only check calculations for integer lambdas.
+
+max_fin_diff = 0.02  # The maximal lambda value used for finite differences.
+
+
+
+###   SCRIPT   ###
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def get_files(path, expression, recursive=True):
     """Returns paths to all files in a given directory that matches a provided
@@ -112,10 +125,21 @@ def main():
         
         json_dict = read_json(json_path)
         l_values = json_dict['apdft_lambdas']
+        bool_idx = [True for _ in l_values]  # Initial values
         if only_fin_diff_lambdas:
-            bool_idx = [True if abs(i) <= max_fin_diff else False for i in l_values]
-        else:
-            bool_idx = [True for _ in l_values]
+            for i in range(len(l_values)):
+                if abs(l_values[i]) <= max_fin_diff:
+                    bool_idx[i] = True
+                else:
+                    bool_idx[i] = False
+        if only_int_lambdas:
+            for i in range(len(l_values)):
+                if l_values[i].is_integer():
+                    bool_idx[i] = True
+                else:
+                    if not abs(l_values[i]) <= max_fin_diff and only_fin_diff_lambdas:
+                        bool_idx[i] = False
+
         if 'cc_converged' in json_dict.keys():
             cc_conv = np.array(json_dict['cc_converged'])
             all_converged_cc = np.all(cc_conv[bool_idx])
@@ -134,7 +158,7 @@ def main():
         
     print('The following calculations did not all converge:\n')
     for i in did_not_converge: print(i)
-    print(f'\n{len(did_not_converge)} did not converge at every considered lambda.')
+    print(f'\n{len(did_not_converge)} did not converge at all considered lambdas.')
     if print_converged:
         print(f'\n\nThe following {len(did_converge)} calculations converged:')
         for i in did_converge: print(i)
