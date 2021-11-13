@@ -220,6 +220,110 @@ def get_lambda_value(
     else:
         raise ValueError(f'Only one or two atoms are supported. There are {len(ref_atomic_numbers)} in this system.')
 
+def get_apdft_refs(
+    df_qc, df_apdft, target_label, target_n_electrons, basis_set='aug-cc-pVQZ',
+    df_selection='apdft', excitation_level=None, specific_atom=None,
+    direction=None, considered_lambdas=None):
+    """A dataframe with all possible APDFT references for a given target system.
+
+    Parameters
+    ----------
+    df_qc : :obj:`pandas.DataFrame`
+        A dataframe with quantum chemistry data.
+    df_apdft : :obj:`pandas.DataFrame`
+        A dataframe with APDFT data.
+    target_label : :obj:`str`
+        Atoms in the system. For example, ``'c'``, ``'si'``, or ``'f.h'``.
+    target_n_electrons : :obj:`int`
+        The number of electrons in the desired APDFT prediction target. All
+        APDFT predictions need to be isoelectronic (same number of electrons).
+    df_selection : :obj:`str`, optional
+        Which dataframe is desired. The APDFT (with polynomial coefficients) or
+        the QC one that contains lambda calculations.
+    excitation_level : :obj:`int`, optional
+        Selects the excitation levels of the references. ``0`` for ground and
+        ``1`` for first excited state. Defaults to ``None``.
+    specific_atom : :obj:`int`, optional
+        
+    
+    Returns
+    -------
+    :obj:`pandas.DataFrame`
+        A sliced APDFT dataframe with an added column of `'electronic_energy'`
+        to be able to select ground or excited states.
+    """
+    if df_selection == 'apdft':
+        if 'electronic_energy' not in df_apdft.columns.values:
+            df_apdft = add_energies_to_df_apdft(df_qc, df_apdft)
+        df_ref = df_apdft.query(
+            'system != @target_label'
+            '& n_electrons == @target_n_electrons'
+            '& basis_set == @basis_set'
+        )
+    elif df_selection == 'qc':
+        df_ref = df_qc.query(
+            'system != @target_label'
+            '& n_electrons == @target_n_electrons'
+            '& basis_set == @basis_set'
+        )
+        # Selects lambda values
+        refs_sys = tuple(set(df_ref['system']))
+        for i in range(len(refs_sys)):
+            sys_label = refs_sys[i]
+            df_refs_sys = df_ref.query('system == @sys_label')
+            if len(set(df_refs_sys['lambda_value'])) != 1:
+                target_rows = df_qc.query(
+                    'system == @target_label'
+                    '& n_electrons == @target_n_electrons'
+                    '& basis_set == @basis_set'
+                )
+                target_atomic_numbers = target_rows.iloc[0]['atomic_numbers']
+                ref_atomic_numbers = df_refs_sys.iloc[0]['atomic_numbers']
+                sys_lambda_value = get_lambda_value(
+                    ref_atomic_numbers, target_atomic_numbers,
+                    specific_atom=specific_atom, direction=direction
+                )
+                drop_filter = (df_ref['system'] == sys_label) \
+                    & ([df_ref['lambda_value']] != sys_lambda_value)
+                df_ref = df_ref[~drop_filter]
+    
+    if considered_lambdas is not None:
+        refs_sys = tuple(set(df_ref['system']))
+        target_atomic_numbers = df_qc.query('system == @target_label').iloc[0]['atomic_numbers']
+        for i in range(len(refs_sys)):
+            sys_label = refs_sys[i]
+            ref_sys = df_ref.query('system == @sys_label')
+            ref_atomic_numbers = ref_sys.iloc[0]['atomic_numbers']
+            lambda_value = get_lambda_value(
+                ref_atomic_numbers, target_atomic_numbers,
+                specific_atom=specific_atom, direction=direction
+            )
+
+            if lambda_value not in considered_lambdas:
+                drop_filter = (df_ref['system'] == sys_label)
+                df_ref = df_ref[~drop_filter]
+
+    if excitation_level is not None:
+        assert excitation_level in [0, 1]
+        refs_sys = tuple(set(df_ref['system']))
+        for i in range(len(refs_sys)):
+            sys_label = refs_sys[i]
+
+            # Gets multiplicity
+            df_mult = df_qc.query(
+                'system == @sys_label'
+                '& n_electrons == @target_n_electrons'
+                '& basis_set == @basis_set'
+            )
+            ref_sys_multiplicity = get_multiplicity(
+                df_mult, excitation_level
+            )
+            drop_filter = (df_ref['system'] == sys_label) \
+                & ([df_ref['multiplicity']] != ref_sys_multiplicity)
+            df_ref = df_ref[~drop_filter]
+
+    return df_ref
+
 def unify_qc_energies(df1, df2):
     """Ensures that energies from compatible methods can be compared.
 
@@ -373,7 +477,8 @@ def get_multiplicity(df, excitation_level, ignore_one_row=False):
 
     Returns
     -------
-    :obj:`float`
+    :obj:`int`
+        System multiplicity of the desired excitation_level.
     """
     if len(df.iloc[0]['atomic_numbers']) == 2:
         is_dimer = True
@@ -403,7 +508,7 @@ def get_multiplicity(df, excitation_level, ignore_one_row=False):
         df_selection, excitation_level, ignore_one_row=ignore_one_row
     )
     multiplicity = df_mult.iloc[0]['multiplicity']
-    return multiplicity
+    return int(multiplicity)
 
 def _get_ptable_row(atom_label):
     """Number of the periodic table an element is in.
@@ -569,3 +674,56 @@ def calc_spin(spin_squared):
     r = r[r>0]
     assert len(r) == 1
     return r[0]
+
+def alchemical_pes(
+    df_qc, system_label, charge, excitation_level=0, basis_set='aug-cc-pV5Z',
+    bond_length=None, energy_type='total', lambdas_center_neutral=False):
+    """
+    
+    Parameters
+    ----------
+    energy_type : :obj:`str`, optional
+        Species the energy type/contributions to examine. Can be ``'total'``
+        energies, ``'hf'`` for Hartree-Fock contributions, or ``'correlation'``
+        energies.
+    lambdas_center_neutral : :obj:`bool`, optional
+        Center the lambda values about the neutral species of the same number
+        of electrons. For example, if the desired system is C- the lambda value
+        of ``0`` and ``1`` would be C- and N if set to ``False``, respectively.
+        If ``True``, then the lambda values for C- and N would be ``-1`` and
+        ``0``, respectively. Defaults to ``False``.
+    
+    Returns
+    -------
+    :obj:`numpy.ndarray`
+        Lambda values representing the necular charge perturbation.
+    :obj:`numpy.ndarray`
+        Energies of the system with respect to the lambda value.
+    """
+    if energy_type == 'total':
+        df_energy_type = 'electronic_energy'
+    elif energy_type == 'hf':
+        df_energy_type = 'hf_energy'
+    elif energy_type == 'correlation':
+        df_energy_type = 'correlation_energy'
+
+    df_alch_pes = df_qc.query(
+        'system == @system_label'
+        '& charge == @charge'
+        '& basis_set == @basis_set'
+    )
+    if len(df_qc.iloc[0]['atomic_numbers']) == 2:
+        assert bond_length is not None
+        df_alch_pes = df_alch_pes.query('bond_length == @bond_length')
+    if len(set(df_alch_pes['multiplicity'].values)) > 1:
+        sys_multiplicity = get_multiplicity(df_alch_pes, excitation_level)
+        df_alch_pes = df_alch_pes.query('multiplicity == @sys_multiplicity')
+
+    lambda_sort = np.argsort(df_alch_pes['lambda_value'].values)
+    lambda_values = df_alch_pes['lambda_value'].values[lambda_sort]
+    energies = df_alch_pes[df_energy_type].values[lambda_sort]
+    
+    if lambdas_center_neutral and charge != 0:
+        lambda_values += charge
+
+    return lambda_values, energies
