@@ -52,11 +52,14 @@ scf_conv_tol_prelim = 1e-06  # Default: 1e-9
 scf_conv_tol_grad_prelim = 1e-03  # Default: 3.162e-6
 diis_damp_prelim = 0.5
 
-cores = 6
+# Job properties
+nodes = 1
 days = 3
+hours = 0
+cluster = 'smp'
+cores = 6
 
 calc_dir = f'./prepared-calcs'
-os.makedirs(calc_dir, exist_ok=True)
 
 apdft_calcs_all = {
     'Li.H': (
@@ -129,11 +132,6 @@ apdft_calcs_all = {
     ),
 }
 
-# Job properties
-nodes = 1
-hours = 0
-cluster = 'smp'
-
 
 
 ###   Global Variables    ###
@@ -178,9 +176,7 @@ def prepare_pyscf_apdft_calc(
     if save_dir[-1] != '/':
         save_dir += '/'
     job_dir = save_dir + system_name + '/' + job_name + '/'
-    os.chdir(save_dir)
     os.makedirs(job_dir, exist_ok=overwrite)
-    os.chdir(job_dir)
 
     atoms_string = "['" + "', '".join(atoms) + "']"
 
@@ -892,6 +888,8 @@ with open(f'{{work_dir}}/{{calc_label}}.json', 'w') as f:
 
 
 def main():
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    os.makedirs(calc_dir, exist_ok=True)
 
     # Loop through all systems.
     for atoms_label in apdft_calcs_all.keys():
