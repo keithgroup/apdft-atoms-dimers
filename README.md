@@ -25,7 +25,7 @@ pip install .
 ### json-data
 
 Cumulative JSON files for atoms and dimers containing quantum chemistry and APDFT data for all species of interest.
-Individual JSON and log files for [atoms](https://github.com/keithgroup/apdft-atoms-data) and [dimers](https://github.com/keithgroup/apdft-dimers-data) can be found in their respective repositories.
+Individual JSON, log files, and explanations for [atoms](https://github.com/keithgroup/apdft-atoms-data) and [dimers](https://github.com/keithgroup/apdft-dimers-data) data can be found in their respective repositories.
 
 ### apdft_tools
 
@@ -44,6 +44,20 @@ Routines to check and analyze calculation JSON files and generate PySCF/APDFT ca
 
 Jupyter notebook examples of how to query and analyze atom and dimer calculations.
 Ionization energies, electron affinities, excited states, equilibrium bond lengths, and potential energy surfaces.
+
+## Terminology
+
+We will be using several terms throughout the repository.
+
+- **Quantum chemistry (QC)**: Data using straightforward wave function methods or density functional theory.
+- **Quantum alchemy (QA)**: Predictions of target systems through nuclear charge perturbations of reference systems.
+- **Target**: A specific system, and its respective property, we are interested in predicting.
+For example, the ionization energy, electron affinity, or multiplicity gap of N.
+- **Reference**: A system, used with quantum alchemy, to predict target energies and properties.
+Must have the same number of electrons as the target system.
+For example, to predict the energy of N we could use B<sup>2&ndash;</sup>, C<sup> &ndash;</sup>, O<sup>+</sup>, and F<sup>2+</sup>.
+- **APDFT-*n***: Approximating the alchemical potential energy surface (PES) using a Taylor series centered at &#8710;Z = 0.
+Central finite difference using a h of 0.01 was used to calculate first through fourth derivatives.
 
 ## License
 
