@@ -503,7 +503,10 @@ def get_multiplicity(df, excitation_level, ignore_one_row=False):
                 'lambda_value == @lambda_selection'
             )
     else:
-        df_selection = df.query('lambda_value == @lambda_selection')
+        if 'lambda_value' in df.columns.values:
+            df_selection = df.query('lambda_value == @lambda_selection')
+        else:
+            df_selection = df
     
     assert len(df_selection) == 2
     df_mult = select_state(
