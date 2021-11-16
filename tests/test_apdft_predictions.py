@@ -25,6 +25,7 @@ import numpy as np
 
 from apdft_tools.data import prepare_dfs, get_qc_df_cbs
 from apdft_tools.prediction import *
+from apdft_tools.utils import *
 
 json_path_atoms = './json-data/atom-pyscf.apdft-data.posthf.json'
 json_path_dimers = './json-data/dimer-pyscf.apdft-data.posthf.json'
@@ -537,8 +538,8 @@ def test_oh_eq():
     # Quantum chemistry
     calc_type = 'qc'
     use_fin_diff = False
-    bl_manual = {'o.h': np.array([0.9675976433933339])}
-    e_manual = {'o.h': np.array([-75.70699288798048])}
+    bl_manual = {'o.h': np.array([0.9675974853219637])}
+    e_manual = {'o.h': np.array([-75.7069928879804])}
 
     bl_test, e_test = dimer_eq(
         df_qc_dimer, system_label, system_charge, calc_type=calc_type, use_fin_diff=use_fin_diff,
@@ -547,22 +548,23 @@ def test_oh_eq():
         n_points=n_points, poly_order=poly_order, remove_outliers=remove_outliers,
         zscore_cutoff=3.0, considered_lambdas=considered_lambdas
     )
-    assert bl_test == bl_manual
-    assert e_test == e_manual
+    
+    assert np.allclose(bl_test['o.h'], bl_manual['o.h'])
+    assert np.allclose(e_test['o.h'], e_manual['o.h'])
     
 
     # Quantum alchemy
     calc_type = 'alchemy'
     use_fin_diff = False
     bl_manual = {
-        'n.h': np.array([0.9671517955750935]),
-        'ne.h': np.array([0.9658039480623926]),
-        'f.h': np.array([0.9671057648190834])
+        'n.h': np.array([0.9671514714434614]),
+        'ne.h': np.array([0.9658039189158778]),
+        'f.h': np.array([0.9671063585985051])
     }
     e_manual = {
-        'n.h': np.array([-75.6924387997202]),
-        'ne.h': np.array([-75.71124458030992]),
-        'f.h': np.array([-75.71020586967403])
+        'n.h': np.array([-75.69243879972716]),
+        'ne.h': np.array([-75.71124458030991]),
+        'f.h': np.array([-75.7102058696739])
     }
 
     bl_test, e_test = dimer_eq(
@@ -572,8 +574,9 @@ def test_oh_eq():
         n_points=n_points, poly_order=poly_order, remove_outliers=remove_outliers,
         zscore_cutoff=3.0, considered_lambdas=considered_lambdas
     )
-    assert bl_test == bl_manual
-    assert e_test == e_manual
+    for key in e_test.keys():
+        assert np.allclose(bl_test[key], bl_manual[key])
+        assert np.allclose(e_test[key], e_manual[key])
     
 
 
@@ -601,6 +604,87 @@ def test_oh_eq():
     for key in ['n.h', 'ne.h', 'f.h']:
         assert np.allclose(bl_test[key], bl_manual[key])
         assert np.allclose(e_test[key], e_manual[key])
+
+def test_ch_bond_lengths_alchemy():
+    system_label = 'c.h'
+    charge = 0  # Initial charge of the system.
+    excitation_level = 0
+
+    basis_set = 'cc-pV5Z'
+    specific_atom = 0
+    n_points = 2
+    poly_order = 4
+
+
+
+    use_fin_diff = False
+    apdft_order = 2
+
+    # Reference QC data
+    df_qc_system = df_qc_dimer.query(
+        'system == @system_label'
+        '& charge == @charge'
+        '& lambda_value == 0'
+    )
+    sys_multiplicity = get_multiplicity(df_qc_system, excitation_level)
+    df_qc_system = df_qc_system.query('multiplicity == @sys_multiplicity')
+    target_n_electrons = df_qc_system.iloc[0]['n_electrons']
+    target_atomic_numbers = df_qc_system.iloc[0]['atomic_numbers']
+
+
+    qc_system_bl, qc_system_e = get_dimer_curve(df_qc_system, lambda_value=0)
+
+    qc_eq_bl, qc_eq_e = get_dimer_minimum(
+        qc_system_bl,qc_system_e, n_points=n_points, poly_order=poly_order,
+    )
+
+    # APDFT predictions with or without Taylor series.
+    if use_fin_diff:
+        df_selection = 'apdft'
+    else:
+        df_selection = 'qc'
+    df_references = get_apdft_refs(
+        df_qc_dimer, df_apdft_dimer, system_label, target_n_electrons, basis_set=basis_set, df_selection=df_selection,
+        excitation_level=excitation_level, specific_atom=specific_atom
+    )
+
+    ref_systems = tuple(set(df_references['system']))
+
+    pred_system_bl = np.zeros((len(ref_systems), len(qc_system_bl)))
+    pred_system_e = np.zeros((len(ref_systems), len(qc_system_bl)))
+    pred_lambda_values = np.zeros(len(ref_systems))
+    pred_eq_bond_lengths = np.zeros(len(ref_systems))
+    pred_eq_energies = np.zeros(len(ref_systems))
+
+    for i in range(len(ref_systems)):
+        sys_label = ref_systems[i]
+        df_ref_sys = df_references.query('system == @sys_label')
+        ref_atomic_numbers = df_ref_sys.iloc[0]['atomic_numbers']
+        ref_lambda_value = get_lambda_value(
+            ref_atomic_numbers, target_atomic_numbers, specific_atom=specific_atom
+        )
+        pred_lambda_values[i] = round(ref_lambda_value)
+        if use_fin_diff:
+            pred_system_bl[i], pred_system_e[i] = get_dimer_curve(
+                df_ref_sys, lambda_value=ref_lambda_value, use_fin_diff=use_fin_diff, apdft_order=apdft_order
+            )
+        else:
+            pred_system_bl[i], pred_system_e[i] = get_dimer_curve(
+                df_ref_sys, lambda_value=ref_lambda_value, use_fin_diff=use_fin_diff
+            )
+        pred_eq_bond_lengths[i], pred_eq_energies[i] = get_dimer_minimum(
+            pred_system_bl[i], pred_system_e[i], n_points=n_points, poly_order=poly_order,
+        )
+
+    manual_eq_bond_lengths = {
+        'n.h': 1.1161874463740096,
+        'o.h': 1.1159269552376616,
+        'b.h': 1.1096924637362215
+    }
+
+    assert qc_eq_bl == 1.1141424746910291
+    for i in range(len(ref_systems)):
+        pred_eq_bond_lengths[i] == manual_eq_bond_lengths[ref_systems[i]]
 
 
 #######################################

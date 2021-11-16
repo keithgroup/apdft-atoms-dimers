@@ -310,17 +310,19 @@ def get_apdft_refs(
             sys_label = refs_sys[i]
 
             # Gets multiplicity
-            df_mult = df_qc.query(
+            df_mult = df_ref.query(
                 'system == @sys_label'
                 '& n_electrons == @target_n_electrons'
                 '& basis_set == @basis_set'
             )
+            assert 'electronic_energy' in df_mult.columns
             ref_sys_multiplicity = get_multiplicity(
                 df_mult, excitation_level
             )
-            drop_filter = (df_ref['system'] == sys_label) \
-                & ([df_ref['multiplicity']] != ref_sys_multiplicity)
-            df_ref = df_ref[~drop_filter]
+            drop_filter = df_ref.query(
+                'system == @sys_label & multiplicity != @ref_sys_multiplicity'
+            ).index
+            df_ref = df_ref.drop(drop_filter)
 
     return df_ref
 
