@@ -27,10 +27,17 @@ import json
 import numpy as np
 from apdft_tools.utils import calc_spin
 
-data_dir = '../../apdft-dimers-data/data'
+data_dir = '../../apdft-atoms-data/data'
 
 only_filename = True  # Instead of printing the absolute path, we print just the filename.
-spin_deviation = 0.1   # Minimum spin deviation to consider "contaminated".
+spin_deviation = 0.2   # Minimum spin deviation to consider "contaminated".
+
+# Lambda selection. Allows you to only check certain lambdas for convergence.
+# Note that both options can be True at the same time.
+only_fin_diff_lambdas = True  # Only check calculations for lambdas used in finite differences.
+only_int_lambdas = True  # Only check calculations for integer lambdas.
+
+max_fin_diff = 0.02  # The maximal lambda value used for finite differences.
 
 
 ###   SCRIPT   ###
@@ -105,8 +112,9 @@ def main():
     
     # Finds all QCJSON files in data directory.
     all_output_paths = get_files(data_dir, '.json', recursive=True)
-    high_spin_contam = []
-    spin_errors = []
+    high_spin_contam_labels = []
+    high_spin_errors = []
+    lambda_high_spin_errors = []
     n_unrestricted = 0
 
     # Loops through all QCJSON files and adds APDFT information.
@@ -114,12 +122,30 @@ def main():
         json_dict = read_json(json_path)
         multiplicity = json_dict['molecular_multiplicity']
         spin_expected = ((multiplicity - 1)/2)
+
+        # Selecting which lambda values to check
+        l_values = json_dict['apdft_lambdas']
+        bool_idx = [True for _ in l_values]  # Initial values
+        if only_fin_diff_lambdas:
+            for i in range(len(l_values)):
+                if abs(l_values[i]) <= max_fin_diff:
+                    bool_idx[i] = True
+                else:
+                    bool_idx[i] = False
+        if only_int_lambdas:
+            for i in range(len(l_values)):
+                if l_values[i].is_integer():
+                    bool_idx[i] = True
+                else:
+                    if not abs(l_values[i]) <= max_fin_diff and only_fin_diff_lambdas:
+                        bool_idx[i] = False
+        
         if 'scf_spin_squared' in json_dict.keys():
             n_unrestricted += 1
             if 'cc_spin_squared' in json_dict.keys():
-                spin_squared_observed = json_dict['cc_spin_squared']
+                spin_squared_observed = np.array(json_dict['cc_spin_squared'])[bool_idx]
             else:
-                spin_squared_observed = json_dict['scf_spin_squared']
+                spin_squared_observed = np.array(json_dict['scf_spin_squared'])[bool_idx]
             spin_error = np.array(
                 [calc_spin(i) - spin_expected for i in spin_squared_observed if i is not None]
             )
@@ -128,15 +154,21 @@ def main():
                     json_name = json_path.split('/')[-1]
                 else:
                     json_name = json_path
-                high_spin_contam.append(json_name)
-                spin_errors.append(spin_error)
+                high_spin_contam_labels.append(json_name)
+
+                bool_idx_high_spin_error = [True if i > spin_deviation else False for i in spin_error]
+                high_spin_errors.append(spin_error[bool_idx_high_spin_error])
+                lambda_high_spin_errors.append(np.array(l_values)[bool_idx][bool_idx_high_spin_error])
+    
+
     
     print(f'The following calculations had high spin contamination (above {spin_deviation}):\n')
-    for json_name,spin_error in zip(high_spin_contam, spin_errors):
+    for json_name,high_spin_error,high_l_values in zip(high_spin_contam_labels, high_spin_errors, lambda_high_spin_errors):
         print(json_name)
-        print(f'Spin errors: {[i for i in spin_error if i > spin_deviation]} out of {len(spin_error)}')
+        print(f'Lambda values: {high_l_values}')
+        print(f'Spin errors: {high_spin_error} out of {len(spin_error)}')
         print()
-    print(f'\n{len(high_spin_contam)} calcs have high spin contamination out of {n_unrestricted} calcs.')
+    print(f'\n{len(high_spin_error)} calcs have high spin contamination out of {n_unrestricted} calcs.')
             
         
 
