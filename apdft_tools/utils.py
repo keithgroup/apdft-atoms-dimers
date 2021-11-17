@@ -139,13 +139,13 @@ def read_json(json_path):
     return json_dict
 
 def system_to_atomic_numbers(system_label):
-    """
+    """Converts the standard system label into atomic numbers.
 
     Parameters
     ----------
     system_label : :obj:`str`
         Specifies the system by stringing together element symbols with a
-        ``'.'`` joining them.
+        ``'.'`` joining them. For example, `be` and `n.h`.
     
     Returns
     -------
@@ -160,7 +160,7 @@ def system_to_atomic_numbers(system_label):
 def get_lambda_value(
     ref_atomic_numbers, target_atomic_numbers, specific_atom=None,
     direction=None):
-    """The overall lambda value between to atomic systems.
+    """The overall alchemical lambda value between two atomic systems.
     
     Parameters
     ----------
@@ -171,15 +171,16 @@ def get_lambda_value(
     specific_atom : :obj:`int`, optional
         Applies the entire lambda change to a single atom in dimers. For
         example, OH -> FH+ would be a lambda change of +1 only on the first
-        atom.
-    direction : :obj:`str`
+        atom. Defaults to ``None``.
+    direction : :obj:`str`, optional
         Defines the direction of lambda changes for dimers. ``'counter'`` is
         is where one atom increases and the other decreases their nuclear
         charge (e.g., CO -> BF).
         
         If the atomic numbers of the reference are the same, the first atom's
-        nuclear charge is decreased and the second is increased. IF they are
+        nuclear charge is decreased and the second is increased. If they are
         different, the atom with the largest atomic number increases by lambda.
+        Defaults to ``None``.
 
     Returns
     -------
@@ -187,7 +188,10 @@ def get_lambda_value(
         Overall lambda value to get from reference to target system.
     """
     assert len(ref_atomic_numbers) == len(target_atomic_numbers)
+
+    # Handles atom systems.
     if len(ref_atomic_numbers) == 1:
+        # Determines the number of decimal points to include in lambda value.
         ref_atomic_numbers_deci = str(ref_atomic_numbers[0]).split('.')
         target_atomic_numbers_deci = str(target_atomic_numbers[0]).split('.')
         if len(ref_atomic_numbers_deci) > 1 or len(target_atomic_numbers_deci):
@@ -197,10 +201,14 @@ def get_lambda_value(
             )
         else:
             num_deci = 0
+        
+        # Computes lambda value.
         lambda_value = target_atomic_numbers - ref_atomic_numbers
         if type(lambda_value) is np.ndarray:
             lambda_value = lambda_value[0]
         return round(lambda_value, num_deci)
+    
+    # Handles dimer systems.
     elif len(ref_atomic_numbers) == 2:
         if specific_atom is not None:
             assert direction is None
@@ -216,15 +224,19 @@ def get_lambda_value(
             else:
                 raise ValueError(f'{direction} direction is not supported.')
         else:
-            raise ValueError(f'specific_atom and direction cannot both be None or specified')
+            raise ValueError(
+                f'specific_atom and direction cannot both be None or specified'
+            )
     else:
-        raise ValueError(f'Only one or two atoms are supported. There are {len(ref_atomic_numbers)} in this system.')
+        raise ValueError(
+            f'Only one or two atoms are supported. There are {len(ref_atomic_numbers)} in this system.'
+        )
 
 def get_apdft_refs(
-    df_qc, df_apdft, target_label, target_n_electrons, basis_set='aug-cc-pVQZ',
+    df_qc, df_apdft, target_label, target_n_electrons, basis_set='aug-cc-pV5Z',
     df_selection='apdft', excitation_level=None, specific_atom=None,
     direction=None, considered_lambdas=None):
-    """A dataframe with all possible APDFT references for a given target system.
+    """Returns dataframe with all possible APDFT references for a given target system.
 
     Parameters
     ----------
@@ -235,22 +247,39 @@ def get_apdft_refs(
     target_label : :obj:`str`
         Atoms in the system. For example, ``'c'``, ``'si'``, or ``'f.h'``.
     target_n_electrons : :obj:`int`
-        The number of electrons in the desired APDFT prediction target. All
-        APDFT predictions need to be isoelectronic (same number of electrons).
+        The number of electrons in the desired target system. All quantum
+        alchemy predictions are isoelectronic (same number of electrons).
     df_selection : :obj:`str`, optional
-        Which dataframe is desired. The APDFT (with polynomial coefficients) or
-        the QC one that contains lambda calculations.
+        Which dataframe is desired. ``'qc'`` for quantum alchemy predictions
+        at specific lambda values or ``'apdft'`` to make Taylor series
+        predictions (with the polynomial coefficients).
     excitation_level : :obj:`int`, optional
         Selects the excitation levels of the references. ``0`` for ground and
-        ``1`` for first excited state. Defaults to ``None``.
+        ``1`` for first excited state. Defaults to ``None`` which means no
+        selection is made.
     specific_atom : :obj:`int`, optional
+        Applies the entire lambda change to a single atom in dimers. For
+        example, OH -> FH+ would be a lambda change of +1 only on the first
+        atom. Defaults to ``None``.
+    direction : :obj:`str`, optional
+        Defines the direction of lambda changes for dimers. ``'counter'`` is
+        is where one atom increases and the other decreases their nuclear
+        charge (e.g., CO -> BF).
         
+        If the atomic numbers of the reference are the same, the first atom's
+        nuclear charge is decreased and the second is increased. If they are
+        different, the atom with the largest atomic number increases by lambda.
+        Defaults to ``None``.
+    considered_lambdas : :obj:`list`
+        Specify the only lambda values that will be considered. ``None``
+        will allow all lambdas to be valid. ``[1, -1]`` would only return
+        references that predict the target with lambdas of ``1`` or ``-1``.
     
     Returns
     -------
     :obj:`pandas.DataFrame`
-        A sliced APDFT dataframe with an added column of `'electronic_energy'`
-        to be able to select ground or excited states.
+        Selected qc or apdft dataframe with quantum alchemy references able
+        to predict the desired target.
     """
     if df_selection == 'apdft':
         if 'electronic_energy' not in df_apdft.columns.values:
@@ -287,10 +316,12 @@ def get_apdft_refs(
                     & ([df_ref['lambda_value']] != sys_lambda_value)
                 df_ref = df_ref[~drop_filter]
     
+    # Filters all quantum alchemy references by specified lambda values.
     if considered_lambdas is not None:
         refs_sys = tuple(set(df_ref['system']))
         target_atomic_numbers = df_qc.query('system == @target_label').iloc[0]['atomic_numbers']
         for i in range(len(refs_sys)):
+            # Gets lambda value to get from reference to target.
             sys_label = refs_sys[i]
             ref_sys = df_ref.query('system == @sys_label')
             ref_atomic_numbers = ref_sys.iloc[0]['atomic_numbers']
@@ -299,10 +330,12 @@ def get_apdft_refs(
                 specific_atom=specific_atom, direction=direction
             )
 
+            # Removes undesired lambda values.
             if lambda_value not in considered_lambdas:
                 drop_filter = (df_ref['system'] == sys_label)
                 df_ref = df_ref[~drop_filter]
 
+    # Selects the desired excitation level if specified.
     if excitation_level is not None:
         assert excitation_level in [0, 1]
         refs_sys = tuple(set(df_ref['system']))
@@ -319,6 +352,8 @@ def get_apdft_refs(
             ref_sys_multiplicity = get_multiplicity(
                 df_mult, excitation_level
             )
+            
+            # Removes undesired states.
             drop_filter = df_ref.query(
                 'system == @sys_label & multiplicity != @ref_sys_multiplicity'
             ).index
