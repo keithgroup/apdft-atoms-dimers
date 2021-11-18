@@ -25,29 +25,33 @@ import pandas as pd
 
 from qa_tools.utils import *
 
-def get_qc_pred(
-    df_qc, system_label, charge, excitation_level=0, lambda_values=[-1, 0, 1],
-    basis_set='aug-cc-pVQZ', ignore_one_row=True):
-    """Calculate QC prediction at specified lambdas
+def qa_predictions(
+    df_qc, ref_label, ref_charge, excitation_level=0, lambda_values=[-1, 0, 1],
+    basis_set='aug-cc-pV5Z', bond_length=None, ignore_one_row=True):
+    """Quantum alchemy predictions of a reference system at specified lambda
+    values.
 
     Parameters
     ----------
     df_qc : :obj:`pandas.dataframe`
         A dataframe with quantum chemistry data.
-    system_label : :obj:`str`
-        The system label of the desired QATS prediction target. For example,
-        `'c'`, `'h'`, etc.
-    charge : :obj:`int`
-        Total system charge.
+    ref_label : :obj:`str`
+        The system label of the desired quantum alchemy reference system.
+        For example, `'c'`, `'h'`, etc.
+    ref_charge : :obj:`int`
+        Total system charge of the quantum alchemy reference system.
     excitation_level : :obj:`int`, optional
         Electronic state of the system with respect to the ground state. ``0``
         represents the ground state, ``1`` the first excited state, etc.
         Defaults to ground state.
     lambda_values : :obj:`float`, :obj:`list`, optional
-        Lambda values to make QC predictions at. Defaults to ``[-1, 0, 1]``.
+       Desired nuclear charge perturbations of the quantum alchemy reference
+       system.
     basis_set : :obj:`str`, optional
         Desired basis sets the predictions are from. Defaults to
-        ``aug-cc-pVQZ``.
+        ``aug-cc-pV5Z``.
+    bond_length : :obj:`float`, optional
+        Desired bond length for dimers; must be specified.
     ignore_one_row : :obj:`bool`, optional
         Used to control errors in ``state_selection`` when there is missing
         data (i.e., just one state). If ``True``, no errors are raised. Defaults
@@ -56,19 +60,17 @@ def get_qc_pred(
     Returns
     -------
     :obj:`numpy.ndarray`
-        Energies of specified lambda values predicted using the quantum chemical
-        method with the same shape.
+        Energies at specified lambda values predicted using quantum alchemy.
     """
     if len(df_qc.iloc[0]['atomic_numbers']) == 2:
-        is_dimer = True
-    else:
-        is_dimer = False
+        df_qc = df_qc.query('bond_length == @bond_length')
+    
     if not isinstance(lambda_values, np.ndarray) and not isinstance(lambda_values, list):
         lambda_values = np.array([lambda_values])
     
     ref_qc = df_qc.query(
-        'system == @system_label'
-        '& charge == @charge'
+        'system == @ref_label'
+        '& charge == @ref_charge'
         '& basis_set == @basis_set'
         '& lambda_value in @lambda_values'
     )

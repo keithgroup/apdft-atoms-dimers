@@ -225,7 +225,7 @@ def get_qats_errors(
 
             # Predicted alchemical energy.
             sys_alchemical_energies.append(
-                get_qc_pred(
+                qa_predictions(
                     df_qc, ref_sys_label, ref_charge, excitation_level=excitation_level,
                     lambda_values=[lambda_value], basis_set=basis_set,
                     ignore_one_row=True

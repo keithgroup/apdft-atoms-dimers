@@ -591,7 +591,7 @@ def _remove_dimer_outliers(bond_lengths, energies, zscore_cutoff=3.0):
 
 def fit_dimer_poly(bond_lengths, energies, n_points=2, poly_order=4,
     remove_outliers=False, zscore_cutoff=3.0):
-    """
+    """Fits a nth-order polynomial to the binding curve minimum.
 
     Parameters
     ----------
@@ -601,12 +601,15 @@ def fit_dimer_poly(bond_lengths, energies, n_points=2, poly_order=4,
         Corresponding electronic energies.
     n_points : :obj:`int`, optional
         The number of surrounding points on either side (forward or backward)
-        of the minimum bond length. Defaults to ``2``.
+        of the minimum bond length. Defaults to ``2`` which would fit to a total
+        of five points.
     poly_order : :obj:`int`, optional
         Maximum order of the fitted polynomial. Defaults to ``4``.
     remove_outliers : :obj:`bool`, optional
         Do not include bond lengths that are marked as outliers by their z
-        score. Defaults to ``False``.
+        score. Useful if there are cases where one quantum alchemy prediction
+        is significantly off (i.e., errors on the order of hundreds of eV).
+        Defaults to ``False``.
     zscore_cutoff : :obj:`float`, optional
         Bond length energies that have a z score higher than this are
         considered outliers. Defaults to ``3.0``.
@@ -639,7 +642,10 @@ def fit_dimer_poly(bond_lengths, energies, n_points=2, poly_order=4,
     return bond_lengths_for_fit, poly_coeff
 
 def _dimer_poly_pred(bond_length, poly_coeffs):
-    """
+    """Energy prediction using a polynomial fitted to the minima of dimer
+    bonding curves.
+
+    Used to identifying the minimum energy of the polynomial fit.
 
     Parameters
     ----------
@@ -652,7 +658,10 @@ def _dimer_poly_pred(bond_length, poly_coeffs):
     return np.polyval(poly_coeffs, bond_length)
 
 def find_poly_min(fit_bond_lengths, poly_coeffs):
-    """
+    """Finds the minimum bond length and respective energy of a polynomial fit
+    to a dimer bonding curve.
+
+    Used to find dimer equilibrium properties.
 
     Parameters
     ----------
@@ -660,10 +669,9 @@ def find_poly_min(fit_bond_lengths, poly_coeffs):
         The bond lengths used to fit the polynomial. Used as bounds for the
         minimizer.
     poly_coeffs : :obj:`numpy.ndarray`
-        The polynomial coefficients representing the minimum of the bond length
-        curve. In order decreasing degree coefficients.
-    init_guess : :obj:`float`, optional
-        Initial guess for bond length in Angstroms. Defaults to ``1.0``.
+        The polynomial coefficients representing the minimum of the bonding
+        curve. Coefficients need to be in order of decreasing degree
+        coefficients.
     
     Returns
     -------
@@ -673,19 +681,22 @@ def find_poly_min(fit_bond_lengths, poly_coeffs):
         Electronic energy of the equilibrium bond length.
     """
     bond_length_bounds = (min(fit_bond_lengths), max(fit_bond_lengths))
+
     opt_data = optimize.minimize(
         _dimer_poly_pred, bond_length_bounds[0], args=(poly_coeffs),
         bounds=(bond_length_bounds,)
     )
     bond_length = opt_data.x[0]
     energy = opt_data.fun
+
     if type(energy) == np.ndarray:
         assert len(energy) == 1
         energy = energy[0]
+    
     return bond_length, energy
 
 def calc_spin(spin_squared):
-    """Calculate the spin of the system given some spin squared.
+    """Calculate the spin of the system given <S^2>.
 
     Solves the expression <S^2> = S(S + 1) for S.
 
@@ -707,10 +718,27 @@ def calc_spin(spin_squared):
 def alchemical_pes(
     df_qc, system_label, charge, excitation_level=0, basis_set='aug-cc-pV5Z',
     bond_length=None, energy_type='total', lambdas_center_neutral=False):
-    """
+    """Lambda values and energies of the quantum alchemical PES.
+
+    Can only be used for atoms or single bond lengths of dimers.
     
     Parameters
     ----------
+    df_qc : :obj:`pandas.DataFrame`
+        Quantum chemistry dataframe.
+    system_label : :obj:`str`
+        Specifies one of the system in the quantum alchemical PES.
+    charge : :obj:`int`
+        Corresponding system charge to the `system_label`.
+    excitation_level : :obj:`int`, optional
+        Electronic state of the system with respect to the ground state. ``0``
+        represents the ground state, ``1`` the first excited state, etc.
+        Defaults to ``0``.
+    basis_set : :obj:`str`, optional
+        Desired basis sets the predictions are from. Defaults to
+        ``aug-cc-pV5Z``.
+    bond_length : :obj:`float`, optional
+        Desired bond length for dimers; must be specified.
     energy_type : :obj:`str`, optional
         Species the energy type/contributions to examine. Can be ``'total'``
         energies, ``'hf'`` for Hartree-Fock contributions, or ``'correlation'``
@@ -725,9 +753,9 @@ def alchemical_pes(
     Returns
     -------
     :obj:`numpy.ndarray`
-        Lambda values representing the necular charge perturbation.
+        Lambda values representing the nuclear charge perturbation.
     :obj:`numpy.ndarray`
-        Energies of the system with respect to the lambda value.
+        Energies of the system with respect to lambda values.
     """
     if energy_type == 'total':
         df_energy_type = 'electronic_energy'
@@ -741,6 +769,7 @@ def alchemical_pes(
         '& charge == @charge'
         '& basis_set == @basis_set'
     )
+    
     if len(df_qc.iloc[0]['atomic_numbers']) == 2:
         assert bond_length is not None
         df_alch_pes = df_alch_pes.query('bond_length == @bond_length')
