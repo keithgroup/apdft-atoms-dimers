@@ -319,9 +319,10 @@ def get_apdft_refs(
                     ref_atomic_numbers, target_atomic_numbers,
                     specific_atom=specific_atom, direction=direction
                 )
-                drop_filter = (df_ref['system'] == sys_label) \
-                    & ([df_ref['lambda_value']] != sys_lambda_value)
-                df_ref = df_ref[~drop_filter]
+                drop_filter = df_ref.query(
+                    'system == @sys_label & lambda_value != @sys_lambda_value'
+                ).index
+                df_ref = df_ref.drop(drop_filter)
     
     # Filters all quantum alchemy references by specified lambda values.
     if considered_lambdas is not None:
