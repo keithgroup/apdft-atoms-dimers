@@ -251,7 +251,7 @@ def test_bond_lengths_qats_ch_from_bh():
         -38.33896887440571, -38.32589894564336]
     )
     bond_lengths, energies = get_dimer_curve(
-        df_qats_ref, lambda_value=lambda_value, use_ts=True, qa_order=2,
+        df_qats_ref, lambda_value=lambda_value, use_ts=True, qats_order=2,
     )
     assert np.array_equal(bond_lengths_manual, bond_lengths)
     assert np.allclose(energies_manual, energies)
@@ -310,15 +310,15 @@ def test_ch_ie1_qats_dimer_correctness():
         'system == "n.h" & charge == 2 & multiplicity == 1'
     )
 
-    qa_order = 0
+    qats_order = 0
     bh_lambda_value = 1
     nh_lambda_value = -1
 
     bh_bond_lengths_initial, bh_e_initial = get_dimer_curve(
-        df_qats_bh_initial, lambda_value=bh_lambda_value, use_ts=True, qa_order=qa_order
+        df_qats_bh_initial, lambda_value=bh_lambda_value, use_ts=True, qats_order=qats_order
     )
     bh_bond_lengths_final, bh_e_final = get_dimer_curve(
-        df_qats_bh_final, lambda_value=bh_lambda_value, use_ts=True, qa_order=qa_order
+        df_qats_bh_final, lambda_value=bh_lambda_value, use_ts=True, qats_order=qats_order
     )
     bh_bond_lengths_initial_eq, bh_e_initial_eq = get_dimer_minimum(
         bh_bond_lengths_initial, bh_e_initial, n_points=n_points, poly_order=poly_order,
@@ -334,10 +334,10 @@ def test_ch_ie1_qats_dimer_correctness():
     
 
     nh_bond_lengths_initial, nh_e_initial = get_dimer_curve(
-        df_qats_nh_initial, lambda_value=nh_lambda_value, use_ts=True, qa_order=qa_order
+        df_qats_nh_initial, lambda_value=nh_lambda_value, use_ts=True, qats_order=qats_order
     )
     nh_bond_lengths_final, nh_e_final = get_dimer_curve(
-        df_qats_nh_final, lambda_value=nh_lambda_value, use_ts=True, qa_order=qa_order
+        df_qats_nh_final, lambda_value=nh_lambda_value, use_ts=True, qats_order=qats_order
     )
     nh_bond_lengths_initial_eq, nh_e_initial_eq = get_dimer_minimum(
         nh_bond_lengths_initial, nh_e_initial, n_points=n_points, poly_order=poly_order,
@@ -492,7 +492,7 @@ def test_oh_from_ne_from_qc():
     basis_set = 'cc-pV5Z'
 
     use_ts = False
-    qa_order = 2
+    qats_order = 2
 
     df_qc_system = df_qc_dimer.query(
         'system == @target_label'
@@ -621,7 +621,7 @@ def test_ch_bond_lengths_alchemy():
 
 
     use_ts = False
-    qa_order = 2
+    qats_order = 2
 
     # Reference QC data
     df_qc_system = df_qc_dimer.query(
@@ -669,7 +669,7 @@ def test_ch_bond_lengths_alchemy():
         pred_lambda_values[i] = round(ref_lambda_value)
         if use_ts:
             pred_system_bl[i], pred_system_e[i] = get_dimer_curve(
-                df_ref_sys, lambda_value=ref_lambda_value, use_ts=use_ts, qa_order=qa_order
+                df_ref_sys, lambda_value=ref_lambda_value, use_ts=use_ts, qats_order=qats_order
             )
         else:
             pred_system_bl[i], pred_system_e[i] = get_dimer_curve(

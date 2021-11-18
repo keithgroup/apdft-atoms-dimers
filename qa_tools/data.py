@@ -449,7 +449,7 @@ def get_qats_dframe(json_dict):
 
 def get_qats_df_cbs(
     df_qc, df_qats, cbs_basis_key='aug', basis_set_higher='aug-cc-pVQZ',
-    max_qa_order=4, finite_diff_delta=0.01,
+    max_qats_order=4, finite_diff_delta=0.01,
     finite_diff_acc=2,
 ):
     """Adds QATS rows from CBS extrapolated data to a dataframe.
@@ -465,7 +465,7 @@ def get_qats_df_cbs(
         dictionaries.
     basis_set_higher : :obj:`str`, optional
         The larger basis set (with a higher cardinal number).
-    max_qa_order : :obj:`int`, optional
+    max_qats_order : :obj:`int`, optional
         The maximum QATS order desired. Defaults to four.
     finite_diff_delta : :obj:`float`
         The deviation from x0 for each point.
@@ -479,7 +479,7 @@ def get_qats_df_cbs(
         QATS dataframe with added CBS extrapolated data.
     """
     stencils = [{'coefficients': np.array([1]), "offsets": np.array([0])}]  # 0th order approximation.
-    for order in range(1, max_qa_order+1):
+    for order in range(1, max_qats_order+1):
         stencils.append(
             findiff.coefficients(
                 deriv=order, acc=finite_diff_acc

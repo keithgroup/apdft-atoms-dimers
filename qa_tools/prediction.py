@@ -454,7 +454,7 @@ def get_dimer_minimum(bond_lengths, energies, n_points=2, poly_order=4,
     )
     return eq_bond_length, eq_energy
 
-def get_dimer_curve(df, lambda_value=None, use_ts=False, qa_order=None):
+def get_dimer_curve(df, lambda_value=None, use_ts=False, qats_order=None):
     """Bond lengths and their respective electronic energies.
 
     There should only be one system left in the dataframe.
@@ -469,7 +469,7 @@ def get_dimer_curve(df, lambda_value=None, use_ts=False, qa_order=None):
     use_ts : :obj:`bool`, optional
         Make QATS-n predictions using Taylor series approximation with
         derivatives from finite differences. Defaults to ``False``.
-    qa_order : :obj:`int`, optional
+    qats_order : :obj:`int`, optional
         Taylor series order to be used in QATS predictions.
     
     Returns
@@ -479,7 +479,7 @@ def get_dimer_curve(df, lambda_value=None, use_ts=False, qa_order=None):
     """
     if use_ts:
         assert 'poly_coeff' in df.columns
-        assert qa_order is not None
+        assert qats_order is not None
         bond_length_order = np.argsort(df['bond_length'].values)
         bond_lengths = []
         energies = []
@@ -489,13 +489,13 @@ def get_dimer_curve(df, lambda_value=None, use_ts=False, qa_order=None):
             )
             poly_coeffs = df.iloc[idx]['poly_coeff']
             energies.append(
-                calc_qats_pred(poly_coeffs, qa_order, lambda_value)[0]
+                calc_qats_pred(poly_coeffs, qats_order, lambda_value)[0]
             )
         
         return np.array(bond_lengths), np.array(energies)
     else:
         assert 'electronic_energy' in df.columns
-        assert qa_order is None
+        assert qats_order is None
         if lambda_value is not None:
             df = df.query('lambda_value == @lambda_value')
         bond_length_order = np.argsort(df['bond_length'].values)
@@ -526,7 +526,7 @@ def dimer_binding_curve(
         ``'alchemy'``. Defaults to ``'qc'``.
     df_qats : :obj:`pandas.DataFrame`, optional
         QATS dataframe. Needs to be specified if ``calc_type == 'alchemy'``.
-    qa_order : :obj:`int`, optional
+    qats_order : :obj:`int`, optional
         Taylor series order used for QATS predictions. Defaults to ``2``.
     basis_set : :obj:`str`, optional
         Specifies the basis set to use for predictions. Defaults to
@@ -612,17 +612,17 @@ def dimer_binding_curve(
             if not use_ts:
                 bl_ref, e_ref = get_dimer_curve(
                     df_ref, lambda_value=ref_lambda_value,
-                    use_ts=use_ts, qa_order=None
+                    use_ts=use_ts, qats_order=None
                 )
             else:
                 bl_ref = []
                 e_ref = []
 
-                max_qa_order = len(df_ref.iloc[0]['poly_coeff'])
-                for qa_order in range(max_qa_order):
+                max_qats_order = len(df_ref.iloc[0]['poly_coeff'])
+                for qats_order in range(max_qats_order):
                     bl_ref_order, e_ref_order = get_dimer_curve(
                         df_ref, lambda_value=ref_lambda_value,
-                        use_ts=use_ts, qa_order=qa_order
+                        use_ts=use_ts, qats_order=qats_order
                     )
                     bl_ref.append(bl_ref_order)
                     e_ref.append(e_ref_order)
@@ -657,7 +657,7 @@ def dimer_eq(
         ``'alchemy'``. Defaults to ``'qc'``.
     df_qats : :obj:`pandas.DataFrame`, optional
         QATS dataframe. Needs to be specified if ``calc_type == 'alchemy'``.
-    qa_order : :obj:`int`, optional
+    qats_order : :obj:`int`, optional
         Taylor series order used for QATS predictions. Defaults to ``2``.
     basis_set : :obj:`str`, optional
         Specifies the basis set to use for predictions. Defaults to
@@ -787,7 +787,7 @@ def get_qc_change_charge_dimer(
     target_initial_n_electrons = target_initial_qc.n_electrons.values[0]
     target_initial_bond_lengths, target_initial_energies = get_dimer_curve(
         target_initial_qc, lambda_value=None, use_ts=False,
-        qa_order=None
+        qats_order=None
     )
     _, target_initial_energy = get_dimer_minimum(
         target_initial_bond_lengths, target_initial_energies, n_points=n_points,
@@ -809,7 +809,7 @@ def get_qc_change_charge_dimer(
         'multiplicity == @ground_multiplicity_final'
     )
     target_final_bond_lengths, target_final_energies = get_dimer_curve(
-        target_final_qc, lambda_value=None, use_ts=False, qa_order=None
+        target_final_qc, lambda_value=None, use_ts=False, qats_order=None
     )
     _, target_final_energy = get_dimer_minimum(
         target_final_bond_lengths, target_final_energies, n_points=n_points,
@@ -986,7 +986,7 @@ def get_qa_change_charge_dimer(
             for order in range(len(ref_initial.iloc[0]['poly_coeff'])):
                 bond_lengths_initial, energies_initial = get_dimer_curve(
                     ref_initial, lambda_value=lambda_initial, use_ts=True,
-                    qa_order=order
+                    qats_order=order
                 )
                 _, e_target_initial = get_dimer_minimum(
                     bond_lengths_initial, energies_initial, n_points=n_points,
@@ -995,7 +995,7 @@ def get_qa_change_charge_dimer(
 
                 bond_lengths_final, energies_final = get_dimer_curve(
                     ref_final, lambda_value=lambda_final, use_ts=True,
-                    qa_order=order
+                    qats_order=order
                 )
                 _, e_target_final = get_dimer_minimum(
                     bond_lengths_final, energies_final, n_points=n_points,
@@ -1018,7 +1018,7 @@ def get_qa_change_charge_dimer(
             )
             bond_lengths_initial, energies_initial = get_dimer_curve(
                 ref_initial_qc, lambda_value=lambda_initial, use_ts=False,
-                qa_order=None
+                qats_order=None
             )
             _, e_target_initial = get_dimer_minimum(
                 bond_lengths_initial, energies_initial, n_points=n_points,
@@ -1034,7 +1034,7 @@ def get_qa_change_charge_dimer(
                 '& basis_set == @basis_set'
             )
             bond_lengths_final, energies_final = get_dimer_curve(
-                ref_final_qc, lambda_value=lambda_final, use_ts=False, qa_order=None
+                ref_final_qc, lambda_value=lambda_final, use_ts=False, qats_order=None
             )
             _, e_target_final = get_dimer_minimum(
                 bond_lengths_final, energies_final, n_points=n_points,
