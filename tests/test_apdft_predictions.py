@@ -685,9 +685,11 @@ def test_ch_bond_lengths_alchemy():
         'b.h': 1.1096923823911184
     }
 
-    assert qc_eq_bl == 1.1141425854358427
+    assert np.allclose(qc_eq_bl, 1.1141425854358427)
     for i in range(len(ref_systems)):
-        pred_eq_bond_lengths[i] == manual_eq_bond_lengths[ref_systems[i]]
+        assert np.allclose(
+            pred_eq_bond_lengths[i], manual_eq_bond_lengths[ref_systems[i]]
+            )
 
 
 #######################################
