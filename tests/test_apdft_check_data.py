@@ -25,7 +25,7 @@ import numpy as np
 
 from qa_tools.utils import read_json
 
-json_path_atoms = '../json-data/atom-pyscf.apdft-data.posthf.json'
+json_path_atoms = '../json-data/atom-pyscf.qa-data.posthf.json'
 json_path_converged = './tests/tests_data/n.chrg0.mult4-pyscf-uccsdt.augccpv5z.json'
 json_path_not_converged = './tests/tests_data/c.chrg-2.mult3-pyscf-uccsdt.augccpv5z.json'
 

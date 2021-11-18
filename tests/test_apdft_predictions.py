@@ -27,8 +27,8 @@ from qa_tools.data import prepare_dfs, get_qc_df_cbs
 from qa_tools.prediction import *
 from qa_tools.utils import *
 
-json_path_atoms = './json-data/atom-pyscf.apdft-data.posthf.json'
-json_path_dimers = './json-data/dimer-pyscf.apdft-data.posthf.json'
+json_path_atoms = './json-data/atom-pyscf.qa-data.posthf.json'
+json_path_dimers = './json-data/dimer-pyscf.qa-data.posthf.json'
 
 df_qc_atom, df_qats_atom = prepare_dfs(
     json_path_atoms, get_CBS=False, only_converged=False

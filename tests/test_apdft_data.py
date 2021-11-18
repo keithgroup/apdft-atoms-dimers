@@ -28,7 +28,7 @@ from qa_tools.utils import *
 from qa_tools.data import *
 from qa_tools.data import _json_parse_qc
 
-json_path_atoms = './json-data/atom-pyscf.apdft-data.posthf.json'
+json_path_atoms = './json-data/atom-pyscf.qa-data.posthf.json'
 json_path_converged_atom = './tests/tests_data/n.chrg0.mult4-pyscf-uccsdt.augccpv5z.json'
 json_path_not_converged_atom = './tests/tests_data/c.chrg-2.mult3-pyscf-uccsdt.augccpv5z.json'
 json_path_converged_dimer = './tests/tests_data/c.h.chrg0.mult2.sep1.10-pyscf-uccsdt.ccpv5z.json'

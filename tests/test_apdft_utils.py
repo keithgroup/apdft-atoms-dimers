@@ -27,11 +27,11 @@ from qa_tools.utils import *
 from qa_tools.utils import  _dimer_poly_pred
 from qa_tools.data import prepare_dfs
 
-json_path_atoms = './json-data/atom-pyscf.apdft-data.posthf.json'
+json_path_atoms = './json-data/atom-pyscf.qa-data.posthf.json'
 json_path_converged_atom = './tests/tests_data/n.chrg0.mult4-pyscf-uccsdt.augccpv5z.json'
 json_path_not_converged_atom = './tests/tests_data/c.chrg-2.mult3-pyscf-uccsdt.augccpv5z.json'
 json_path_converged_dimer = './tests/tests_data/c.h.chrg0.mult2.sep1.10-pyscf-uccsdt.ccpv5z.json'
-json_path_dimers = './json-data/dimer-pyscf.apdft-data.posthf.json'
+json_path_dimers = './json-data/dimer-pyscf.qa-data.posthf.json'
 
 df_qc_atom, df_qats_atom = prepare_dfs(
     json_path_atoms, get_CBS=False, only_converged=False

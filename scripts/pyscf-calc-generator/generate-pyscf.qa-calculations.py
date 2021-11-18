@@ -914,7 +914,7 @@ def main():
             force_unrestrict_spin = calc_dict['force_unrestrict_spin']
             if dimer_sep_range == 'None' and dimer_sep_step == 'None':
                 system_name = f'{atoms_label.lower()}.{state_label}'
-                job_name = f'{system_name}-pyscf.apdft-{method_label}.{basis_set_label}'
+                job_name = f'{system_name}-pyscf.qa-{method_label}.{basis_set_label}'
                 if broken_symmetry == 'True':
                     job_name += '.brokensym'
                 elif force_unrestrict_spin == 'True':
@@ -934,7 +934,7 @@ def main():
                 ):
                     dimer_sep = round(dimer_sep, 2)
                     system_name = f'{atoms_label.lower()}.{state_label}.sep{dimer_sep}'
-                    job_name = f'{system_name}-pyscf.apdft-{method_label}.{basis_set_label}'
+                    job_name = f'{system_name}-pyscf.qa-{method_label}.{basis_set_label}'
                     if broken_symmetry == 'True':
                         job_name += '.brokensym'
                     elif force_unrestrict_spin == 'True':
