@@ -168,7 +168,7 @@ def main():
         print(f'Lambda values: {high_l_values}')
         print(f'Spin errors: {high_spin_error} out of {len(spin_error)}')
         print()
-    print(f'\n{len(high_spin_error)} calcs have high spin contamination out of {n_unrestricted} calcs.')
+    print(f'\n{len(high_spin_errors)} calcs have high spin contamination out of {n_unrestricted} calcs.')
             
         
 
