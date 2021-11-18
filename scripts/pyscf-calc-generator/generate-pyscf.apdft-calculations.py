@@ -61,74 +61,74 @@ cores = 6
 
 calc_dir = f'./prepared-calcs'
 
-apdft_calcs_all = {
+qa_calcs_all = {
     'Li.H': (
-        {'state': 'chrg-1.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg-1.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg-1.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg-1.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
     ),
     'Be.H': (
-        {'state': 'chrg-1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg-1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg-1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg-1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
     ),
     'B.H': (
-        {'state': 'chrg-1.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg-1.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg2.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg2.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg-1.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg-1.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg2.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg2.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
     ),
     'C.H': (
-        {'state': 'chrg2.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg2.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg-1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg-1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg2.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg2.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg-1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg-1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
     ),
     'N.H': (
-        {'state': 'chrg2.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg2.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg-1.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg-1.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg2.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg2.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg-1.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg-1.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 3)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
     ),
     'O.H': (
-        {'state': 'chrg2.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg2.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg-1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg-1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg2.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg2.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg-1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg-1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(0, 2)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
     ),
     'F.H': (
-        {'state': 'chrg2.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg2.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg0.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg2.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg2.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg0.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-1, 1)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
     ),
     'Ne.H': (
-        {'state': 'chrg2.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg2.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
-        {'state': 'chrg1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_apdft_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg2.mult2', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg2.mult4', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-3, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult1', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
+        {'state': 'chrg1.mult3', 'qc_method': 'CCSD(T)', 'try_easier_state_if_fail': 'None', 'basis_set': basis_set, 'lambda_limits': '(-2, 0)', 'dimer_sep_range': '(0.6, 1.9)', 'dimer_sep_step': '0.1', 'specific_atom_lambda': '0', 'broken_symmetry': 'False', 'force_unrestrict_spin': 'False', 'max_qa_order': '4', 'lambda_step': '0.25', 'finite_diff_accuracy': finite_diff_accuracy, 'finite_diff_delta': finite_diff_delta},
     ),
 }
 
@@ -167,7 +167,7 @@ if calc_dir[-1] != '/':
     calc_dir += '/'
 
 
-def prepare_pyscf_apdft_calc(
+def prepare_pyscf_qa_calc(
     system_name, job_name, atoms, charge, multiplicity, calc_dict, save_dir=calc_dir,
     dimer_sep=None
 ):
@@ -211,7 +211,7 @@ crc-job-stats.py
         open_file.write(content)
     
     # Just need to have {{}} for cases were we are not using f-strings here.
-    pyscf_apdft_script = (
+    pyscf_qa_script = (
 f"""
 import os
 import pathlib
@@ -265,7 +265,7 @@ scf_conv_tol_grad_prelim = {scf_conv_tol_grad_prelim}  # Default: 3.162e-6
 diis_damp_prelim = {diis_damp_prelim}
 
 # Specifying alchemical parts.
-max_apdft_order = {calc_dict['max_apdft_order']}
+max_qa_order = {calc_dict['max_qa_order']}
 lambda_step = {calc_dict['lambda_step']}
 lambda_limits = {calc_dict['lambda_limits']}
 specific_atom_lambda = {calc_dict['specific_atom_lambda']}
@@ -722,7 +722,7 @@ lambda_qc_data = get_qc_data(qc_method_lower, lambda_atom_values)
 # Gets a stencil (framework) for computing finite differences of different orders.
 def get_stencil():
     stencil = [{{'coefficients': np.array([1]), "offsets": np.array([0])}}]  # 0th order approximation.
-    for order in range(1, max_apdft_order+1):
+    for order in range(1, max_qa_order+1):
         stencil.append(findiff.coefficients(deriv=order, acc=finite_diff_accuracy)['center'])
     return stencil
 s = get_stencil()
@@ -746,16 +746,16 @@ for order, stencil in enumerate(s):
     poly_coeffs.append(contribution)
 
 # Making APDFT predictions
-def apdft_pred(poly_coeffs, order, lambda_values):
+def qats_pred(poly_coeffs, order, lambda_values):
     return np.polyval(poly_coeffs[:order+1][::-1], lambda_values)
 
 lambda_qats_energies = []
-for order in range(0, max_apdft_order+1):
-    lambda_qats_energies.append(apdft_pred(poly_coeffs, order, lambda_values))
+for order in range(0, max_qa_order+1):
+    lambda_qats_energies.append(qats_pred(poly_coeffs, order, lambda_values))
 
 # Plotting predictions.
 plt.plot(lambda_values, lambda_qc_data['total_energies'], label=f'{{qc_method_label}}/{{basis_set}}', color=ref_color)
-for order in range(0, max_apdft_order+1):
+for order in range(0, max_qa_order+1):
     plt.plot(
         lambda_values,
         lambda_qats_energies[order],  # APDFT predictions
@@ -773,7 +773,7 @@ plt.savefig(f'{{work_dir}}/{{calc_label}}-qc.apdft.energies.png', dpi=1000)
 plt.close()
 
 # Plotting error.
-for order in range(0, max_apdft_order+1):
+for order in range(0, max_qa_order+1):
     plt.plot(
         lambda_values,
         lambda_qats_energies[order] - lambda_qc_data['total_energies'],
@@ -804,12 +804,12 @@ else:
     all_dispersion_energies = np.take_along_axis(np.hstack((lambda_qc_data['dispersion_energies'], fd_qc_data['dispersion_energies'][1:])), sort_i, axis=0)
 
 qats_energies = dict()
-for order in range(0, max_apdft_order+1):
-    qats_energies[str(order)] = apdft_pred(poly_coeffs, order, all_lambdas)
+for order in range(0, max_qa_order+1):
+    qats_energies[str(order)] = qats_pred(poly_coeffs, order, all_lambdas)
 
 
 json_dict = {{
-    'schema_name': 'pyscf_apdft_output',
+    'schema_name': 'pyscf_qa_output',
     'provenance': {{
         'creator': 'PySCF',
         'version': pyscf_version
@@ -884,7 +884,7 @@ with open(f'{{work_dir}}/{{calc_label}}.json', 'w') as f:
 """
 )
     with open(job_dir + 'apdft-pyscf-calc.py', 'w') as f:
-        f.write(pyscf_apdft_script)
+        f.write(pyscf_qa_script)
 
 
 def main():
@@ -892,12 +892,12 @@ def main():
     os.makedirs(calc_dir, exist_ok=True)
 
     # Loop through all systems.
-    for atoms_label in apdft_calcs_all.keys():
+    for atoms_label in qa_calcs_all.keys():
         atoms = atoms_label.split('.')
         save_dir = calc_dir + atoms_label.lower()
         os.makedirs(save_dir, exist_ok=True)
         # Loop through every state.
-        for calc_dict in apdft_calcs_all[atoms_label]:
+        for calc_dict in qa_calcs_all[atoms_label]:
             state_label = calc_dict['state']
             chrg_str, mult_str = state_label.split('.')
             chrg = int(chrg_str[4:])
@@ -919,7 +919,7 @@ def main():
                     job_name += '.brokensym'
                 elif force_unrestrict_spin == 'True':
                     job_name += '.spinunrestrict'
-                prepare_pyscf_apdft_calc(
+                prepare_pyscf_qa_calc(
                     system_name, job_name,
                     atoms, chrg, mult, calc_dict,
                     save_dir=save_dir
@@ -939,7 +939,7 @@ def main():
                         job_name += '.brokensym'
                     elif force_unrestrict_spin == 'True':
                         job_name += '.spinunrestrict'
-                    prepare_pyscf_apdft_calc(
+                    prepare_pyscf_qa_calc(
                         system_name, job_name,
                         atoms, chrg, mult, calc_dict,
                         save_dir=save_dir_dimer, dimer_sep=dimer_sep

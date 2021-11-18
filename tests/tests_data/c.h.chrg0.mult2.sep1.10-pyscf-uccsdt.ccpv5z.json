@@ -1,5 +1,5 @@
 {
-    "schema_name": "pyscf_apdft_output",
+    "schema_name": "pyscf_qa_output",
     "provenance": {
         "creator": "PySCF",
         "version": "1.7.6"
