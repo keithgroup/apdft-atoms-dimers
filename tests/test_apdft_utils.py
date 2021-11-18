@@ -23,9 +23,9 @@
 import numpy as np
 from scipy import optimize
 
-from apdft_tools.utils import *
-from apdft_tools.utils import  _dimer_poly_pred
-from apdft_tools.data import prepare_dfs
+from qa_tools.utils import *
+from qa_tools.utils import  _dimer_poly_pred
+from qa_tools.data import prepare_dfs
 
 json_path_atoms = './json-data/atom-pyscf.apdft-data.posthf.json'
 json_path_converged_atom = './tests/tests_data/n.chrg0.mult4-pyscf-uccsdt.augccpv5z.json'

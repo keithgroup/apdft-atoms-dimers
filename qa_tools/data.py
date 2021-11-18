@@ -26,7 +26,7 @@ import pandas as pd
 from scipy import optimize
 import findiff
 
-from apdft_tools.utils import *
+from qa_tools.utils import *
 
 def _calc_distance(r1, r2):
     """Calculates the Euclidean distance between two points.
@@ -139,7 +139,7 @@ def _json_parse_qc(system_label, json_calc, only_converged=False):
 
     return df_rows
 
-def _json_parse_apdft(system_label, json_calc):
+def _json_parse_qats(system_label, json_calc):
     """
 
     Currently there are no checks that the calculations pertinent to finite
@@ -439,11 +439,11 @@ def get_qats_dframe(json_dict):
             for calc_label in json_dict[system_label][state_label].keys():
                 if 'qats_poly_coeffs' in json_dict[system_label][state_label][calc_label].keys():
                     calc_data = json_dict[system_label][state_label][calc_label]
-                    prelim_df.extend(_json_parse_apdft(system_label, calc_data))
+                    prelim_df.extend(_json_parse_qats(system_label, calc_data))
                 else:
                     for calc_label2 in json_dict[system_label][state_label][calc_label].keys():
                         calc_data = json_dict[system_label][state_label][calc_label][calc_label2]
-                        prelim_df.extend(_json_parse_apdft(system_label, calc_data))
+                        prelim_df.extend(_json_parse_qats(system_label, calc_data))
                 
     return pd.DataFrame(prelim_df)
 

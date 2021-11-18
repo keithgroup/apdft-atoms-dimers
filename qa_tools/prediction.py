@@ -23,7 +23,7 @@
 import numpy as np
 import pandas as pd
 
-from apdft_tools.utils import *
+from qa_tools.utils import *
 
 def get_qc_pred(
     df_qc, system_label, charge, excitation_level=0, lambda_values=[-1, 0, 1],
@@ -307,46 +307,46 @@ def get_qats_change_charge(
         ].system.values
     )
     
-    ref_initial_apdft = get_qa_refs(
+    ref_initial_qats = get_qa_refs(
         df_qc, df_qats, target_label, target_initial_n_electrons,
         basis_set=basis_set
     )
     if bond_length is not None:
-        ref_initial_apdft = ref_initial_apdft.query(
+        ref_initial_qats = ref_initial_qats.query(
             'bond_length == @bond_length'
         )
-    ref_initial_apdft = ref_initial_apdft[
-        ref_initial_apdft['system'].isin(avail_ref_final_sys)
+    ref_initial_qats = ref_initial_qats[
+        ref_initial_qats['system'].isin(avail_ref_final_sys)
     ]
-    ref_initial_apdft = select_state(
-        ref_initial_apdft, 0, ignore_one_row=ignore_one_row
+    ref_initial_qats = select_state(
+        ref_initial_qats, 0, ignore_one_row=ignore_one_row
     )
 
     # Get all available references for the final target based on ground state
     # energies.
-    ref_final_apdft = get_qa_refs(
+    ref_final_qats = get_qa_refs(
         df_qc, df_qats, target_label, target_final_n_electrons,
         basis_set=basis_set
     )
     if bond_length is not None:
-        ref_final_apdft = ref_final_apdft.query(
+        ref_final_qats = ref_final_qats.query(
             'bond_length == @bond_length'
         )
-    ref_final_apdft = ref_final_apdft[
-        ref_final_apdft['system'].isin(ref_initial_apdft.system)
+    ref_final_qats = ref_final_qats[
+        ref_final_qats['system'].isin(ref_initial_qats.system)
     ]
-    ref_final_apdft = select_state(
-        ref_final_apdft, 0, ignore_one_row=ignore_one_row
+    ref_final_qats = select_state(
+        ref_final_qats, 0, ignore_one_row=ignore_one_row
     )
 
     # Checks that the size of initial and final dataframe is the same
-    assert len(ref_initial_apdft) == len(ref_final_apdft)
+    assert len(ref_initial_qats) == len(ref_final_qats)
 
 
     predictions = {}
-    for system in ref_initial_apdft.system:
-        ref_initial = ref_initial_apdft.query('system == @system')
-        ref_final = ref_final_apdft.query('system == @system')
+    for system in ref_initial_qats.system:
+        ref_initial = ref_initial_qats.query('system == @system')
+        ref_final = ref_final_qats.query('system == @system')
         lambda_initial = get_lambda_value(
             ref_initial.iloc[0]['atomic_numbers'], target_atomic_numbers,
             specific_atom=lambda_specific_atom, direction=lambda_direction
@@ -583,7 +583,7 @@ def dimer_binding_curve(
         sys_atomic_numbers = df_sys.iloc[0]['atomic_numbers']
         if use_qats:
             assert df_qats is not None
-            df_selection = 'apdft'
+            df_selection = 'qats'
         else:
             df_selection = 'qc'
         df_refs = get_qa_refs(
@@ -937,33 +937,33 @@ def get_qats_change_charge_dimer(
         ].system.values
     )
     
-    ref_initial_apdft = df_qats.query(
+    ref_initial_qats = df_qats.query(
         'n_electrons == @target_initial_n_electrons'
         '& basis_set == @basis_set'
         '& multiplicity == @ground_multiplicity_initial'
     )
-    ref_initial_apdft = ref_initial_apdft[
-        ref_initial_apdft['system'].isin(avail_ref_final_sys)
+    ref_initial_qats = ref_initial_qats[
+        ref_initial_qats['system'].isin(avail_ref_final_sys)
     ]
 
     # Get all available references for the final target based on ground state
     # energies.
-    ref_final_apdft = df_qats.query(
+    ref_final_qats = df_qats.query(
         'n_electrons == @target_final_n_electrons'
         '& basis_set == @basis_set'
         '& multiplicity == @ground_multiplicity_final'
     )
-    ref_final_apdft = ref_final_apdft[
-        ref_final_apdft['system'].isin(ref_initial_apdft.system)
+    ref_final_qats = ref_final_qats[
+        ref_final_qats['system'].isin(ref_initial_qats.system)
     ]
 
     # Checks that the size of initial and final dataframe is the same
-    assert len(ref_initial_apdft) == len(ref_final_apdft)
+    assert len(ref_initial_qats) == len(ref_final_qats)
 
     predictions = {}
-    for system in set(ref_initial_apdft.system):
-        ref_initial = ref_initial_apdft.query('system == @system')
-        ref_final = ref_final_apdft.query('system == @system')
+    for system in set(ref_initial_qats.system):
+        ref_initial = ref_initial_qats.query('system == @system')
+        ref_final = ref_final_qats.query('system == @system')
 
         lambda_initial = get_lambda_value(
             ref_initial.iloc[0]['atomic_numbers'], target_atomic_numbers,
@@ -1152,33 +1152,33 @@ def get_qats_excitation(
     target_atomic_numbers = target_initial_qc.iloc[0]['atomic_numbers']
     
 
-    ref_apdft = get_qa_refs(
+    ref_qats = get_qa_refs(
         df_qc, df_qats, target_label, n_electrons,
         basis_set=basis_set
     )
-    if len(ref_apdft) == 0 or len(ref_apdft) == 1:
+    if len(ref_qats) == 0 or len(ref_qats) == 1:
         # Often we do not have the data to make the prediction.
         # So we return nothing.
         return {}
-    elif len(ref_apdft) > 1:
-        ref_initial_apdft = select_state(
-            ref_apdft, 0, ignore_one_row=ignore_one_row
+    elif len(ref_qats) > 1:
+        ref_initial_qats = select_state(
+            ref_qats, 0, ignore_one_row=ignore_one_row
         )
-        ref_final_apdft = select_state(
-            ref_apdft, excitation_level, ignore_one_row=ignore_one_row
+        ref_final_qats = select_state(
+            ref_qats, excitation_level, ignore_one_row=ignore_one_row
         )
 
     # Checks that the size of initial and final dataframe is the same
-    assert len(ref_initial_apdft) == len(ref_final_apdft)
+    assert len(ref_initial_qats) == len(ref_final_qats)
 
     predictions = {}
-    for system in ref_initial_apdft.system:
-        ref_initial = ref_initial_apdft.query('system == @system')
+    for system in ref_initial_qats.system:
+        ref_initial = ref_initial_qats.query('system == @system')
         lambda_initial = get_lambda_value(
             ref_initial.iloc[0]['atomic_numbers'], target_atomic_numbers
         )
         
-        ref_final = ref_final_apdft.query('system == @system')
+        ref_final = ref_final_qats.query('system == @system')
         lambda_final = get_lambda_value(
             ref_final.iloc[0]['atomic_numbers'], target_atomic_numbers
         )

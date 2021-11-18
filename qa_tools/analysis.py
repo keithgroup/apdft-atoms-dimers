@@ -22,8 +22,8 @@
 
 import numpy as np
 
-from apdft_tools.utils import *
-from apdft_tools.prediction import *
+from qa_tools.utils import *
+from qa_tools.prediction import *
 
 def get_alchemical_errors(
     df_qc, n_electrons, excitation_level=0,
@@ -204,7 +204,7 @@ def get_qats_errors(
 
         df_qats_ref = get_qa_refs(
             df_qc, df_qats, target_label, n_electrons, basis_set=basis_set,
-            df_selection='apdft', excitation_level=excitation_level, specific_atom=specific_atom,
+            df_selection='qats', excitation_level=excitation_level, specific_atom=specific_atom,
             direction=direction, considered_lambdas=None
         )
         

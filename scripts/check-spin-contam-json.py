@@ -25,7 +25,7 @@
 import os
 import json
 import numpy as np
-from apdft_tools.utils import calc_spin
+from qa_tools.utils import calc_spin
 
 data_dir = '../../apdft-atoms-data/data'
 

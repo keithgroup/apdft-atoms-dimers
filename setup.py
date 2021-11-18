@@ -27,11 +27,11 @@ requirements = [
 ]
 
 setup(
-    name='apdft_tools',
+    name='qa_tools',
     version='0.0.1',
     author='Alex M. Maldonado',
     url='https://github.com/keithgroup/mbGDML/apdft-atoms-dimers',
-    packages=['apdft_tools',],
+    packages=['qa_tools',],
     install_requires=requirements,
     long_description=open('README.md').read(),
     classifiers=[

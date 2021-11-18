@@ -23,9 +23,9 @@
 import pytest
 import numpy as np
 
-from apdft_tools.data import prepare_dfs, get_qc_df_cbs
-from apdft_tools.prediction import *
-from apdft_tools.utils import *
+from qa_tools.data import prepare_dfs, get_qc_df_cbs
+from qa_tools.prediction import *
+from qa_tools.utils import *
 
 json_path_atoms = './json-data/atom-pyscf.apdft-data.posthf.json'
 json_path_dimers = './json-data/dimer-pyscf.apdft-data.posthf.json'
@@ -116,7 +116,7 @@ def test_n_ie1_qats_correctness():
 
     # Alchemical predictions
     use_qats = False
-    ie1_apdft = get_qats_change_charge(
+    ie1_qats = get_qats_change_charge(
         df_qc_atom, df_qats_atom, target_label, delta_charge,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
         basis_set=basis_set, use_qats=use_qats,
@@ -124,12 +124,12 @@ def test_n_ie1_qats_correctness():
         lambda_direction=lambda_direction
     )
 
-    ie1_qats_keys = [i for i in ie1_apdft.keys()]
+    ie1_qats_keys = [i for i in ie1_qats.keys()]
     ie1_qats_keys.sort()
     assert ie1_qats_keys == ['b', 'c', 'o']
     for key in ['b', 'c', 'o']:
         assert np.array_equal(
-            ie1_apdft[key], np.array([ie1_manual[key]], dtype='float64')
+            ie1_qats[key], np.array([ie1_manual[key]], dtype='float64')
         )
 
     # Finite differences
@@ -277,7 +277,7 @@ def test_ch_ie1_qats_dimer_correctness():
         'b.h': np.array([0.3903041968078611]),
         'n.h': np.array([0.38959475994708725])
     }
-    ie1_apdft = get_qats_change_charge_dimer(
+    ie1_qats = get_qats_change_charge_dimer(
         df_qc_dimer, df_qats_dimer, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
@@ -286,12 +286,12 @@ def test_ch_ie1_qats_dimer_correctness():
         poly_order=poly_order, n_points=n_points
     )
 
-    ie1_qats_keys = [i for i in ie1_apdft.keys()]
+    ie1_qats_keys = [i for i in ie1_qats.keys()]
     ie1_qats_keys.sort()
     assert ie1_qats_keys == ['b.h', 'n.h']
     for key in ['b.h', 'n.h']:
         assert np.allclose(
-            ie1_apdft[key], ie1_manual[key]
+            ie1_qats[key], ie1_manual[key]
         )
     
     # Taylor series predictions.
@@ -359,7 +359,7 @@ def test_ch_ie1_qats_dimer_correctness():
         )
     }
 
-    ie1_apdft = get_qats_change_charge_dimer(
+    ie1_qats = get_qats_change_charge_dimer(
         df_qc_dimer, df_qats_dimer, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
@@ -368,12 +368,12 @@ def test_ch_ie1_qats_dimer_correctness():
         poly_order=poly_order, n_points=n_points, remove_outliers=remove_outliers
     )
 
-    ie1_qats_keys = [i for i in ie1_apdft.keys()]
+    ie1_qats_keys = [i for i in ie1_qats.keys()]
     ie1_qats_keys.sort()
     assert ie1_qats_keys == ['b.h', 'n.h']
     for key in ['b.h', 'n.h']:
         assert np.allclose(
-            ie1_apdft[key], ie1_manual[key]
+            ie1_qats[key], ie1_manual[key]
         )
 
 
@@ -427,7 +427,7 @@ def test_n_ea_qats_correctness():
     
     # Alchemical predictions
     use_qats = False
-    ea_apdft = get_qats_change_charge(
+    ea_qats = get_qats_change_charge(
         df_qc_atom, df_qats_atom, target_label, delta_charge, bond_length=bond_length,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
         basis_set=basis_set, use_qats=use_qats,
@@ -435,12 +435,12 @@ def test_n_ea_qats_correctness():
         lambda_direction=lambda_direction
     )
 
-    ea_qats_keys = [i for i in ea_apdft.keys()]
+    ea_qats_keys = [i for i in ea_qats.keys()]
     ea_qats_keys.sort()
     assert ea_qats_keys == ['c', 'f', 'o']
     for key in ['c', 'f', 'o']:
         assert np.array_equal(
-            ea_apdft[key], np.array([ea_manual[key]], dtype='float64')
+            ea_qats[key], np.array([ea_manual[key]], dtype='float64')
         )
     
     # Finite differences
@@ -643,7 +643,7 @@ def test_ch_bond_lengths_alchemy():
 
     # APDFT predictions with or without Taylor series.
     if use_qats:
-        df_selection = 'apdft'
+        df_selection = 'qats'
     else:
         df_selection = 'qc'
     df_references = get_qa_refs(
@@ -734,18 +734,18 @@ def test_n_ee_qats_correctness():
 
     # Alchemical predictions
     use_qats = False
-    ee_apdft = get_qats_excitation(
+    ee_qats = get_qats_excitation(
         df_qc_atom, df_qats_atom, target_label, target_charge=target_charge,
         excitation_level=excitation_level, basis_set=basis_set,
         use_qats=use_qats
     )
 
-    ee_qats_keys = [i for i in ee_apdft.keys()]
+    ee_qats_keys = [i for i in ee_qats.keys()]
     ee_qats_keys.sort()
     assert ee_qats_keys == ['b', 'c', 'f', 'o']
     for key in ['b', 'c', 'f', 'o']:
         assert np.array_equal(
-            ee_apdft[key], np.array([ee_manual[key]], dtype='float64')
+            ee_qats[key], np.array([ee_manual[key]], dtype='float64')
         )
 
     # Finite differences

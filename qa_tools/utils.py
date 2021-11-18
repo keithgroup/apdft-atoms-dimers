@@ -238,7 +238,7 @@ def get_lambda_value(
 
 def get_qa_refs(
     df_qc, df_qats, target_label, target_n_electrons, basis_set='aug-cc-pV5Z',
-    df_selection='apdft', excitation_level=None, specific_atom=None,
+    df_selection='qats', excitation_level=None, specific_atom=None,
     direction=None, considered_lambdas=None):
     """Returns dataframe with all possible APDFT references for a given target system.
 
@@ -258,7 +258,7 @@ def get_qa_refs(
         ``aug-cc-pV5Z``.
     df_selection : :obj:`str`, optional
         Which dataframe is desired. ``'qc'`` for quantum alchemy predictions
-        at specific lambda values or ``'apdft'`` to make Taylor series
+        at specific lambda values or ``'qats'`` to make Taylor series
         predictions (with the polynomial coefficients).
     excitation_level : :obj:`int`, optional
         Selects the excitation levels of the references. ``0`` for ground and
@@ -288,7 +288,7 @@ def get_qa_refs(
         Selected qc or apdft dataframe with quantum alchemy references able
         to predict the desired target.
     """
-    if df_selection == 'apdft':
+    if df_selection == 'qats':
         if 'electronic_energy' not in df_qats.columns.values:
             df_qats = add_energies_to_df_qats(df_qc, df_qats)
         df_ref = df_qats.query(

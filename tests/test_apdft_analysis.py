@@ -24,9 +24,9 @@ import pytest
 import numpy as np
 
 
-from apdft_tools.data import prepare_dfs, get_qc_df_cbs
-from apdft_tools.prediction import *
-from apdft_tools.analysis import *
+from qa_tools.data import prepare_dfs, get_qc_df_cbs
+from qa_tools.prediction import *
+from qa_tools.analysis import *
 
 json_path_atoms = './json-data/atom-pyscf.apdft-data.posthf.json'
 json_path_dimers = './json-data/dimer-pyscf.apdft-data.posthf.json'
