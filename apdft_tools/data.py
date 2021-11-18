@@ -62,7 +62,7 @@ def _json_parse_qc(system_label, json_calc, only_converged=False):
     if only_converged and 'cc_converged' in json_calc.keys():
         if not np.all(np.array(json_calc['cc_converged'])): return []
     # Getting row-dependent data.
-    apdft_lambdas = json_calc['apdft_lambdas']
+    qa_lambdas = json_calc['qa_lambdas']
     electronic_energies = json_calc['electronic_energies']
     scf_converged = json_calc['scf_converged']
 
@@ -93,7 +93,7 @@ def _json_parse_qc(system_label, json_calc, only_converged=False):
         broken_sym = None
 
     # Adds df row for every lambda.
-    for i in range(len(apdft_lambdas)):
+    for i in range(len(qa_lambdas)):
         df_dict = {'system': system_label}
 
         # Checks convergence stuff.
@@ -129,7 +129,7 @@ def _json_parse_qc(system_label, json_calc, only_converged=False):
         df_dict['broken_sym'] = broken_sym
 
         # Important ones go in front and back.
-        df_dict['lambda_value'] = float(apdft_lambdas[i])
+        df_dict['lambda_value'] = float(qa_lambdas[i])
         df_dict['electronic_energy'] = electronic_energies[i]
         if len(df_dict['atomic_numbers']) == 2:
             geo = np.array(json_calc['molecule']['geometry'])
@@ -164,13 +164,13 @@ def _json_parse_apdft(system_label, json_calc):
     df_dict['n_electrons'] = json_calc['n_electrons']
     df_dict['qc_method'] = json_calc['model']['method']
     df_dict['basis_set'] = json_calc['model']['basis']
-    apdft_lambdas = json_calc['apdft_lambdas']
+    qa_lambdas = json_calc['qa_lambdas']
     df_dict['lambda_range'] = (
-        int(min(apdft_lambdas)), int(max(apdft_lambdas))
+        int(min(qa_lambdas)), int(max(qa_lambdas))
     )
     df_dict['finite_diff_delta'] = json_calc['finite_diff_delta']
     df_dict['finite_diff_acc'] = json_calc['finite_diff_acc']
-    df_dict['poly_coeff'] = np.array(json_calc['apdft_poly_coeff'])
+    df_dict['poly_coeff'] = np.array(json_calc['qats_poly_coeffs'])
     if len(df_dict['atomic_numbers']) == 2:
         geo = np.array(json_calc['molecule']['geometry'])
         df_dict['bond_length'] = _calc_distance(geo[0], geo[1])
@@ -437,7 +437,7 @@ def get_qats_dframe(json_dict):
         for state_label in json_dict[system_label].keys():
             # Loops through every calculation.
             for calc_label in json_dict[system_label][state_label].keys():
-                if 'apdft_poly_coeff' in json_dict[system_label][state_label][calc_label].keys():
+                if 'qats_poly_coeffs' in json_dict[system_label][state_label][calc_label].keys():
                     calc_data = json_dict[system_label][state_label][calc_label]
                     prelim_df.extend(_json_parse_apdft(system_label, calc_data))
                 else:

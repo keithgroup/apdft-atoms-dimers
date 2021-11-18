@@ -749,16 +749,16 @@ for order, stencil in enumerate(s):
 def apdft_pred(poly_coeffs, order, lambda_values):
     return np.polyval(poly_coeffs[:order+1][::-1], lambda_values)
 
-lambda_apdft_energies = []
+lambda_qats_energies = []
 for order in range(0, max_apdft_order+1):
-    lambda_apdft_energies.append(apdft_pred(poly_coeffs, order, lambda_values))
+    lambda_qats_energies.append(apdft_pred(poly_coeffs, order, lambda_values))
 
 # Plotting predictions.
 plt.plot(lambda_values, lambda_qc_data['total_energies'], label=f'{{qc_method_label}}/{{basis_set}}', color=ref_color)
 for order in range(0, max_apdft_order+1):
     plt.plot(
         lambda_values,
-        lambda_apdft_energies[order],  # APDFT predictions
+        lambda_qats_energies[order],  # APDFT predictions
         label=f"APDFT{{order}}",
         marker='o',
         markeredgewidth=0,
@@ -776,7 +776,7 @@ plt.close()
 for order in range(0, max_apdft_order+1):
     plt.plot(
         lambda_values,
-        lambda_apdft_energies[order] - lambda_qc_data['total_energies'],
+        lambda_qats_energies[order] - lambda_qc_data['total_energies'],
         label=f"APDFT{{order}}",
         marker='o',
     )
@@ -803,9 +803,9 @@ if qc_method_lower in ['hf', 'ccsd', 'ccsd(t)']:
 else:
     all_dispersion_energies = np.take_along_axis(np.hstack((lambda_qc_data['dispersion_energies'], fd_qc_data['dispersion_energies'][1:])), sort_i, axis=0)
 
-apdft_energies = dict()
+qats_energies = dict()
 for order in range(0, max_apdft_order+1):
-    apdft_energies[str(order)] = apdft_pred(poly_coeffs, order, all_lambdas)
+    qats_energies[str(order)] = apdft_pred(poly_coeffs, order, all_lambdas)
 
 
 json_dict = {{
@@ -832,10 +832,10 @@ json_dict = {{
     'broken_symmetry': broken_symmetry,
     'finite_diff_delta': finite_diff_delta,
     'finite_diff_acc': finite_diff_accuracy,
-    'apdft_lambdas': all_lambdas,
+    'qa_lambdas': all_lambdas,
     'electronic_energies': all_total_energies,
-    'apdft_energies': apdft_energies,
-    'apdft_poly_coeff': poly_coeffs
+    'qats_energies': qats_energies,
+    'qats_poly_coeffs': poly_coeffs
 }}
 
 if qc_method_lower in ['ccsd', 'ccsd(t)']:

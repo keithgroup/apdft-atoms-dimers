@@ -124,7 +124,7 @@ def main():
     for json_path in all_output_paths:
         
         json_dict = read_json(json_path)
-        l_values = json_dict['apdft_lambdas']
+        l_values = json_dict['qa_lambdas']
         bool_idx = [True for _ in l_values]  # Initial values
         if only_fin_diff_lambdas:
             for i in range(len(l_values)):
