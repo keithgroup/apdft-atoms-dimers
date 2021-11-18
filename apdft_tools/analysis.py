@@ -293,7 +293,7 @@ def get_qc_binding_curve(
 def apdft_error_change_charge(
     df_qc, df_apdft, target_label, delta_charge, change_signs=False,
     basis_set='aug-cc-pVQZ', target_initial_charge=0, use_fin_diff=True,
-    max_apdft_order=4, enforce_all_rules=False, ignore_one_row=False,
+    max_apdft_order=4, ignore_one_row=False,
     considered_lambdas=None, compute_difference=False
 ):
     """Computes APDFT errors in change the charge of a system.
@@ -313,10 +313,7 @@ def apdft_error_change_charge(
         considered_lambdas=considered_lambdas,
         compute_difference=compute_difference
     )
-    if enforce_all_rules:
-        apdft_predictions = exclude_apdft_refs(
-            target_label, apdft_predictions
-        )
+    
     apdft_predictions = {
         key:hartree_to_ev(value) for (key,value) in apdft_predictions.items()
     }  # Converts to eV
@@ -339,7 +336,7 @@ def apdft_error_change_charge_dimer(
     df_qc, df_apdft, target_label, delta_charge, change_signs=False,
     basis_set='cc-pV5Z', target_initial_charge=0, use_fin_diff=True,
     lambda_specific_atom=None, lambda_direction=None,
-    max_apdft_order=4, enforce_all_rules=False, ignore_one_row=False,
+    max_apdft_order=4, ignore_one_row=False,
     considered_lambdas=None, compute_difference=False,
     n_points=2, poly_order=4, remove_outliers=False,
     zscore_cutoff=3.0):
@@ -364,10 +361,7 @@ def apdft_error_change_charge_dimer(
         remove_outliers=remove_outliers, considered_lambdas=considered_lambdas,
         compute_difference=compute_difference
     )
-    if enforce_all_rules:
-        apdft_predictions = exclude_apdft_refs(
-            target_label, apdft_predictions
-        )
+    
     apdft_predictions = {
         key:hartree_to_ev(value) for (key,value) in apdft_predictions.items()
     }  # Converts to eV
@@ -389,7 +383,7 @@ def apdft_error_change_charge_dimer(
 def apdft_error_excitation_energy(
     df_qc, df_apdft, target_label, target_charge=0, excitation_level=1,
     basis_set='aug-cc-pVQZ', use_fin_diff=True,
-    max_apdft_order=4, enforce_all_rules=False, ignore_one_row=False,
+    max_apdft_order=4, ignore_one_row=False,
     considered_lambdas=None, compute_difference=False
 ):
     """Computes APDFT errors in system excitation energies.
@@ -412,10 +406,7 @@ def apdft_error_excitation_energy(
         considered_lambdas=considered_lambdas,
         compute_difference=compute_difference
     )
-    if enforce_all_rules:
-        apdft_predictions = exclude_apdft_refs(
-            target_label, apdft_predictions
-        )
+    
     apdft_predictions = {key:hartree_to_ev(value) for (key,value) in apdft_predictions.items()}  # Converts to eV
     if use_fin_diff:
         apdft_predictions = pd.DataFrame(

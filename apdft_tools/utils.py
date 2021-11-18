@@ -212,7 +212,9 @@ def get_lambda_value(
     elif len(ref_atomic_numbers) == 2:
         if specific_atom is not None:
             assert direction is None
-            return target_atomic_numbers[specific_atom] - ref_atomic_numbers[specific_atom]
+            return float(
+                target_atomic_numbers[specific_atom] - ref_atomic_numbers[specific_atom]
+            )
         elif direction is not None:
             assert specific_atom is None
             if direction.lower() == 'counter':
@@ -220,7 +222,9 @@ def get_lambda_value(
                     idx = 1
                 else:
                     idx = np.argmax(ref_atomic_numbers)
-                return target_atomic_numbers[idx] - ref_atomic_numbers[idx]
+                return float(
+                    target_atomic_numbers[idx] - ref_atomic_numbers[idx]
+                )
             else:
                 raise ValueError(f'{direction} direction is not supported.')
         else:
@@ -249,6 +253,9 @@ def get_apdft_refs(
     target_n_electrons : :obj:`int`
         The number of electrons in the desired target system. All quantum
         alchemy predictions are isoelectronic (same number of electrons).
+    basis_set : :obj:`str`, optional
+        Desired basis sets the predictions are from. Defaults to
+        ``aug-cc-pV5Z``.
     df_selection : :obj:`str`, optional
         Which dataframe is desired. ``'qc'`` for quantum alchemy predictions
         at specific lambda values or ``'apdft'`` to make Taylor series
@@ -256,7 +263,7 @@ def get_apdft_refs(
     excitation_level : :obj:`int`, optional
         Selects the excitation levels of the references. ``0`` for ground and
         ``1`` for first excited state. Defaults to ``None`` which means no
-        selection is made.
+        selection is made. Defaults to ``None``.
     specific_atom : :obj:`int`, optional
         Applies the entire lambda change to a single atom in dimers. For
         example, OH -> FH+ would be a lambda change of +1 only on the first
@@ -386,8 +393,10 @@ def unify_qc_energies(df1, df2):
     # Checks that methods are the same (HF with HF, CCSD with CCSD, etc.)
     target_initial_method = dfs[0]['qc_method']
     target_final_method = dfs[1]['qc_method']
-    if 'HF' in target_initial_method or 'CCSD' in target_initial_method: target_initial_method = target_initial_method.replace('U', '')
-    if 'HF' in target_final_method or 'CCSD' in target_final_method: target_final_method = target_final_method.replace('U', '')
+    if 'HF' in target_initial_method or 'CCSD' in target_initial_method:
+        target_initial_method = target_initial_method.replace('U', '')
+    if 'HF' in target_final_method or 'CCSD' in target_final_method:
+        target_final_method = target_final_method.replace('U', '')
     methods = (target_initial_method, target_final_method)
 
     if target_initial_method != target_final_method:
@@ -449,7 +458,7 @@ def add_energies_to_df_apdft(df_qc, df_apdft):
     return df_apdft
 
 def select_state(df, excitation_level, ignore_one_row=False):
-    """The dataframe with only the desired electronic state.
+    """Filters dataframes to only contain the desired excitation level.
 
     Only should be one basis set in this dataframe.
 
@@ -470,6 +479,8 @@ def select_state(df, excitation_level, ignore_one_row=False):
     :obj:`pandas.dataframe`
         The dataframe with only the selected electronic state remaining.
     """
+    assert 'electronic_energy' in df.columns
+
     try:
         assert len(set(df.basis_set.values)) == 1
     except AssertionError:
@@ -494,10 +505,11 @@ def select_state(df, excitation_level, ignore_one_row=False):
     return df
 
 def get_multiplicity(df, excitation_level, ignore_one_row=False):
-    """The multiplicity of the specified ground or excited state.
+    """Multiplicity of the specified ground or excited state.
 
     Used for dimer dataframes where we have multiple states (usually two) with
-    several rows for several bond lengths. Can have more than one lambda.
+    several rows for multiple bond lengths. Dataframe can contain multiple
+    systems and lambda values.
 
     Parameters
     ----------
@@ -528,6 +540,8 @@ def get_multiplicity(df, excitation_level, ignore_one_row=False):
     
     if 'lambda_value' in df.columns.values:
         lambda_selection = row['lambda_value']
+    
+    # Prepares the selection dataframe.
     if is_dimer:
         bond_length_selection = row['bond_length']
         df_selection = df.query(
@@ -542,8 +556,8 @@ def get_multiplicity(df, excitation_level, ignore_one_row=False):
             df_selection = df.query('lambda_value == @lambda_selection')
         else:
             df_selection = df
-    
     assert len(df_selection) == 2
+
     df_mult = select_state(
         df_selection, excitation_level, ignore_one_row=ignore_one_row
     )
@@ -566,32 +580,6 @@ def _get_ptable_row(atom_label):
     for p_row in range(len(all_atom_systems_by_row)):
         if atom_label in all_atom_systems_by_row[p_row]:
             return p_row
-
-def exclude_apdft_refs(target, predictions, enforce_same_row=True):
-    """Remove any APDFT references based on prediction rules.
-
-    Parameters
-    ----------
-    target : :obj:`str`
-        The APDFT target system. 
-    predictions : :obj:`dict`
-        A dictionary of APDFT predictions where the keys are reference system
-        labels.
-    enforce_same_row : :obj:`bool`, optional
-        Predictions of atomic systems from other rows of the periodic table are
-        typically very unreliable. This filters out any references from other
-        rows than from the target. Defaults to ``True``.
-    
-    Returns
-    -------
-    :obj:`dict`
-        The prediction dictionary without any references that failed enforced
-        rules.
-    """
-    if enforce_same_row:
-        target_row = _get_ptable_row(target)
-        predictions = {key:val for key, val in predictions.items() if _get_ptable_row(key) == target_row}
-    return predictions
 
 def _remove_dimer_outliers(bond_lengths, energies, zscore_cutoff=3.0):
     """Removes outliers 

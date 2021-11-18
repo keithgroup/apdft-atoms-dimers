@@ -99,23 +99,6 @@ def test_get_lambda_values_dimers():
         z_ref, z_target, specific_atom=specific_atom, direction=direction
     )
     assert l_value == 1
-        
-def test_excluding_refs():
-    ie1_na = {
-        'f': np.array([-8.93724608,  1.56860081,  3.23677422,  0.76601293,  0.57823284]),
-        'mg': np.array([14.96431253,  3.22490641,  5.20520483,  5.24681091,  5.21738649]),
-        'ne': np.array([-4.16051985,  2.11175154,  2.3517983 ,  2.42774818,  2.45166539])
-    }
-    ie1_na_filtered = exclude_apdft_refs('na', ie1_na, enforce_same_row=True)
-    assert list(ie1_na_filtered.keys()) == ['mg']
-
-    ie1_n = {
-        'b': np.array([-3.34014742,  0.43310341,  0.51399739, 23.7499062 , 59.99541286]),
-        'c': np.array([ 1.25238498, 10.53899965, 14.99981923, 14.32618933, 14.07038683]),
-        'o': np.array([35.13921244, 11.02114258, 14.51037908, 14.53571473, 14.54087874])
-    }
-    ie1_n_filtered = exclude_apdft_refs('n', ie1_n, enforce_same_row=True)
-    assert list(ie1_n_filtered.keys()) == ['b', 'c', 'o']
     
 def test_qc_ch_fit_parabola():
     # Get data for system
