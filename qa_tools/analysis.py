@@ -36,7 +36,7 @@ def get_alchemical_errors(
     bond_length : :obj:`float`, optional
 
     return_energies : :obj:`bool`, optional
-        Return APDFT energies instead of errors.
+        Return QATS energies instead of errors.
     energy_type : :obj:`str`, optional
         Species the energy type/contributions to examine. Can be ``'total'``
         energies, ``'hf'`` for Hartree-Fock contributions, or ``'correlation'``
@@ -150,9 +150,9 @@ def get_qats_errors(
     Parameters
     ----------
     qa_order : :obj:`int`, optional
-        Desired order of APDFT to use. Defaults to ``2``.
+        Desired order of QATS to use. Defaults to ``2``.
     return_energies : :obj:`bool`, optional
-        Return APDFT energies instead of errors.
+        Return QATS energies instead of errors.
     
     Returns
     -------
@@ -190,7 +190,7 @@ def get_qats_errors(
     alchemical_energies = []
     qats_energies = []
 
-    # Goes through all possible reference systems and calculates APDFTn predictions
+    # Goes through all possible reference systems and calculates QATS-n predictions
     # then computes the alchemical predictions and errors.
     # Loops through all systems.
     for i in range(len(sys_labels)):
@@ -210,7 +210,7 @@ def get_qats_errors(
         
         charge_sort = np.argsort(df_qats_ref['charge'].values)  # most negative to most positive
 
-        # Loops through all APDFT references.
+        # Loops through all QATS references.
         for j in charge_sort:
             qats_row = df_qats_ref.iloc[j]
             ref_sys_label = qats_row['system']
@@ -232,14 +232,14 @@ def get_qats_errors(
                 )[0]
             )
 
-            # APDFT prediction
+            # QATS prediction
             sys_qats_energies.append(
                 calc_qats_pred(
                     ref_poly_coeffs, qa_order, lambda_value
                 )[0]
             )
         
-        # Adds in alchemical energy and APDFT reference
+        # Adds in alchemical energy and QATS reference
         sys_alchemical_energies.insert(i, np.nan)
         sys_qats_energies.insert(i, np.nan)
 
@@ -292,11 +292,11 @@ def get_qc_binding_curve(
 
 def qats_error_change_charge(
     df_qc, df_qats, target_label, delta_charge, change_signs=False,
-    basis_set='aug-cc-pVQZ', target_initial_charge=0, use_qats=True,
+    basis_set='aug-cc-pVQZ', target_initial_charge=0, use_ts=True,
     max_qa_order=4, ignore_one_row=False,
     considered_lambdas=None, compute_difference=False
 ):
-    """Computes APDFT errors in change the charge of a system.
+    """Computes QATS errors in change the charge of a system.
     """
     qc_prediction = hartree_to_ev(
         get_qc_change_charge(
@@ -305,11 +305,11 @@ def qats_error_change_charge(
             change_signs=change_signs, basis_set=basis_set
         )
     )
-    qats_predictions = get_qats_change_charge(
+    qats_predictions = get_qa_change_charge(
         df_qc, df_qats, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
-        use_qats=use_qats, ignore_one_row=ignore_one_row, 
+        use_ts=use_ts, ignore_one_row=ignore_one_row, 
         considered_lambdas=considered_lambdas,
         compute_difference=compute_difference
     )
@@ -317,14 +317,14 @@ def qats_error_change_charge(
     qats_predictions = {
         key:hartree_to_ev(value) for (key,value) in qats_predictions.items()
     }  # Converts to eV
-    if use_qats or compute_difference:
+    if use_ts or compute_difference:
         qats_predictions = pd.DataFrame(
             qats_predictions,
-            index=[f'APDFT{i}' for i in range(max_qa_order+1)]
+            index=[f'QATS-{i}' for i in range(max_qa_order+1)]
         )
     else:
         qats_predictions = pd.DataFrame(
-            qats_predictions, index=['APDFT']
+            qats_predictions, index=['QATS']
         )
     if compute_difference:
         return qats_predictions
@@ -334,13 +334,13 @@ def qats_error_change_charge(
 
 def qats_error_change_charge_dimer(
     df_qc, df_qats, target_label, delta_charge, change_signs=False,
-    basis_set='cc-pV5Z', target_initial_charge=0, use_qats=True,
+    basis_set='cc-pV5Z', target_initial_charge=0, use_ts=True,
     lambda_specific_atom=None, lambda_direction=None,
     max_qa_order=4, ignore_one_row=False,
     considered_lambdas=None, compute_difference=False,
     n_points=2, poly_order=4, remove_outliers=False,
     zscore_cutoff=3.0):
-    """Computes APDFT errors in change the charge of a system.
+    """Computes QATS errors in change the charge of a system.
     """
     qc_prediction = hartree_to_ev(
         get_qc_change_charge_dimer(
@@ -352,10 +352,10 @@ def qats_error_change_charge_dimer(
             zscore_cutoff=zscore_cutoff
         )
     )
-    qats_predictions = get_qats_change_charge_dimer(
+    qats_predictions = get_qa_change_charge_dimer(
         df_qc, df_qats, target_label, delta_charge,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
-        basis_set=basis_set, use_qats=use_qats,
+        basis_set=basis_set, use_ts=use_ts,
         lambda_specific_atom=lambda_specific_atom, lambda_direction=lambda_direction,
         ignore_one_row=ignore_one_row, poly_order=poly_order, n_points=n_points,
         remove_outliers=remove_outliers, considered_lambdas=considered_lambdas,
@@ -365,14 +365,14 @@ def qats_error_change_charge_dimer(
     qats_predictions = {
         key:hartree_to_ev(value) for (key,value) in qats_predictions.items()
     }  # Converts to eV
-    if use_qats or compute_difference:
+    if use_ts or compute_difference:
         qats_predictions = pd.DataFrame(
             qats_predictions,
-            index=[f'APDFT{i}' for i in range(max_qa_order+1)]
+            index=[f'QATS-{i}' for i in range(max_qa_order+1)]
         )
     else:
         qats_predictions = pd.DataFrame(
-            qats_predictions, index=['APDFT']
+            qats_predictions, index=['QATS']
         )
     if compute_difference:
         return qats_predictions
@@ -382,11 +382,11 @@ def qats_error_change_charge_dimer(
 
 def qats_error_excitation_energy(
     df_qc, df_qats, target_label, target_charge=0, excitation_level=1,
-    basis_set='aug-cc-pVQZ', use_qats=True,
+    basis_set='aug-cc-pVQZ', use_ts=True,
     max_qa_order=4, ignore_one_row=False,
     considered_lambdas=None, compute_difference=False
 ):
-    """Computes APDFT errors in system excitation energies.
+    """Computes QATS errors in system excitation energies.
 
     Returns
     -------
@@ -399,22 +399,22 @@ def qats_error_excitation_energy(
             ignore_one_row=ignore_one_row
         )
     )
-    qats_predictions = get_qats_excitation(
+    qats_predictions = get_qa_excitation(
         df_qc, df_qats, target_label, target_charge=target_charge,
         excitation_level=excitation_level, basis_set=basis_set,
-        use_qats=use_qats, ignore_one_row=ignore_one_row,
+        use_ts=use_ts, ignore_one_row=ignore_one_row,
         considered_lambdas=considered_lambdas,
         compute_difference=compute_difference
     )
     
     qats_predictions = {key:hartree_to_ev(value) for (key,value) in qats_predictions.items()}  # Converts to eV
-    if use_qats:
+    if use_ts:
         qats_predictions = pd.DataFrame(
-            qats_predictions, index=[f'APDFT{i}' for i in range(max_qa_order+1)]
+            qats_predictions, index=[f'QATS-{i}' for i in range(max_qa_order+1)]
         )  # Makes dataframe
     else:
         qats_predictions = pd.DataFrame(
-            qats_predictions, index=['APDFT']
+            qats_predictions, index=['QATS']
         )  # Makes dataframe
 
     if compute_difference:

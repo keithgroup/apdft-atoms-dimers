@@ -27,7 +27,7 @@ import json
 import numpy as np
 from qa_tools.utils import calc_spin
 
-data_dir = '../../apdft-atoms-data/data'
+data_dir = '../../qa-atoms-data/data'
 
 only_filename = True  # Instead of printing the absolute path, we print just the filename.
 spin_deviation = 0.2   # Minimum spin deviation to consider "contaminated".
@@ -117,7 +117,7 @@ def main():
     lambda_high_spin_errors = []
     n_unrestricted = 0
 
-    # Loops through all QCJSON files and adds APDFT information.
+    # Loops through all QCJSON files and adds QATS information.
     for json_path in all_output_paths:
         json_dict = read_json(json_path)
         multiplicity = json_dict['molecular_multiplicity']

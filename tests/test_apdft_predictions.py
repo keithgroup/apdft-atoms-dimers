@@ -115,11 +115,11 @@ def test_n_ie1_qats_correctness():
     }
 
     # Alchemical predictions
-    use_qats = False
-    ie1_qats = get_qats_change_charge(
+    use_ts = False
+    ie1_qats = get_qa_change_charge(
         df_qc_atom, df_qats_atom, target_label, delta_charge,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
-        basis_set=basis_set, use_qats=use_qats,
+        basis_set=basis_set, use_ts=use_ts,
         lambda_specific_atom=lambda_specific_atom,
         lambda_direction=lambda_direction
     )
@@ -151,11 +151,11 @@ def test_n_ie1_qats_correctness():
         ),
     }
 
-    use_qats = True
-    ie1_qats = get_qats_change_charge(
+    use_ts = True
+    ie1_qats = get_qa_change_charge(
         df_qc_atom, df_qats_atom, target_label, delta_charge,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
-        basis_set=basis_set, use_qats=use_qats,
+        basis_set=basis_set, use_ts=use_ts,
         lambda_specific_atom=lambda_specific_atom,
         lambda_direction=lambda_direction
     )
@@ -251,7 +251,7 @@ def test_bond_lengths_qats_ch_from_bh():
         -38.33896887440571, -38.32589894564336]
     )
     bond_lengths, energies = get_dimer_curve(
-        df_qats_ref, lambda_value=lambda_value, use_qats=True, qa_order=2,
+        df_qats_ref, lambda_value=lambda_value, use_ts=True, qa_order=2,
     )
     assert np.array_equal(bond_lengths_manual, bond_lengths)
     assert np.allclose(energies_manual, energies)
@@ -272,16 +272,16 @@ def test_ch_ie1_qats_dimer_correctness():
 
 
     # Alchemical predictions.
-    use_qats = False
+    use_ts = False
     ie1_manual = {
         'b.h': np.array([0.3903041968078611]),
         'n.h': np.array([0.38959475994708725])
     }
-    ie1_qats = get_qats_change_charge_dimer(
+    ie1_qats = get_qa_change_charge_dimer(
         df_qc_dimer, df_qats_dimer, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
-        use_qats=use_qats, lambda_specific_atom=lambda_specific_atom,
+        use_ts=use_ts, lambda_specific_atom=lambda_specific_atom,
         lambda_direction=lambda_direction, ignore_one_row=ignore_one_row,
         poly_order=poly_order, n_points=n_points
     )
@@ -295,7 +295,7 @@ def test_ch_ie1_qats_dimer_correctness():
         )
     
     # Taylor series predictions.
-    use_qats = True
+    use_ts = True
     """
     df_qats_bh_initial = df_qats.query(
         'system == "b.h" & charge == -1 & multiplicity == 2'
@@ -315,10 +315,10 @@ def test_ch_ie1_qats_dimer_correctness():
     nh_lambda_value = -1
 
     bh_bond_lengths_initial, bh_e_initial = get_dimer_curve(
-        df_qats_bh_initial, lambda_value=bh_lambda_value, use_qats=True, qa_order=qa_order
+        df_qats_bh_initial, lambda_value=bh_lambda_value, use_ts=True, qa_order=qa_order
     )
     bh_bond_lengths_final, bh_e_final = get_dimer_curve(
-        df_qats_bh_final, lambda_value=bh_lambda_value, use_qats=True, qa_order=qa_order
+        df_qats_bh_final, lambda_value=bh_lambda_value, use_ts=True, qa_order=qa_order
     )
     bh_bond_lengths_initial_eq, bh_e_initial_eq = get_dimer_minimum(
         bh_bond_lengths_initial, bh_e_initial, n_points=n_points, poly_order=poly_order,
@@ -334,10 +334,10 @@ def test_ch_ie1_qats_dimer_correctness():
     
 
     nh_bond_lengths_initial, nh_e_initial = get_dimer_curve(
-        df_qats_nh_initial, lambda_value=nh_lambda_value, use_qats=True, qa_order=qa_order
+        df_qats_nh_initial, lambda_value=nh_lambda_value, use_ts=True, qa_order=qa_order
     )
     nh_bond_lengths_final, nh_e_final = get_dimer_curve(
-        df_qats_nh_final, lambda_value=nh_lambda_value, use_qats=True, qa_order=qa_order
+        df_qats_nh_final, lambda_value=nh_lambda_value, use_ts=True, qa_order=qa_order
     )
     nh_bond_lengths_initial_eq, nh_e_initial_eq = get_dimer_minimum(
         nh_bond_lengths_initial, nh_e_initial, n_points=n_points, poly_order=poly_order,
@@ -359,11 +359,11 @@ def test_ch_ie1_qats_dimer_correctness():
         )
     }
 
-    ie1_qats = get_qats_change_charge_dimer(
+    ie1_qats = get_qa_change_charge_dimer(
         df_qc_dimer, df_qats_dimer, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
-        use_qats=use_qats, lambda_specific_atom=lambda_specific_atom,
+        use_ts=use_ts, lambda_specific_atom=lambda_specific_atom,
         lambda_direction=lambda_direction, ignore_one_row=ignore_one_row,
         poly_order=poly_order, n_points=n_points, remove_outliers=remove_outliers
     )
@@ -426,11 +426,11 @@ def test_n_ea_qats_correctness():
     }
     
     # Alchemical predictions
-    use_qats = False
-    ea_qats = get_qats_change_charge(
+    use_ts = False
+    ea_qats = get_qa_change_charge(
         df_qc_atom, df_qats_atom, target_label, delta_charge, bond_length=bond_length,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
-        basis_set=basis_set, use_qats=use_qats,
+        basis_set=basis_set, use_ts=use_ts,
         lambda_specific_atom=lambda_specific_atom,
         lambda_direction=lambda_direction
     )
@@ -462,11 +462,11 @@ def test_n_ea_qats_correctness():
         ),
     }
 
-    use_qats = True
-    ea_qats = get_qats_change_charge(
+    use_ts = True
+    ea_qats = get_qa_change_charge(
         df_qc_atom, df_qats_atom, target_label, delta_charge, bond_length=bond_length,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
-        basis_set=basis_set, use_qats=use_qats,
+        basis_set=basis_set, use_ts=use_ts,
         lambda_specific_atom=lambda_specific_atom,
         lambda_direction=lambda_direction
     )
@@ -491,7 +491,7 @@ def test_oh_from_ne_from_qc():
     specific_atom = 0
     basis_set = 'cc-pV5Z'
 
-    use_qats = False
+    use_ts = False
     qa_order = 2
 
     df_qc_system = df_qc_dimer.query(
@@ -540,12 +540,12 @@ def test_oh_eq():
 
     # Quantum chemistry
     calc_type = 'qc'
-    use_qats = False
+    use_ts = False
     bl_manual = {'o.h': np.array([0.9675974853219637])}
     e_manual = {'o.h': np.array([-75.7069928879804])}
 
     bl_test, e_test = dimer_eq(
-        df_qc_dimer, system_label, system_charge, calc_type=calc_type, use_qats=use_qats,
+        df_qc_dimer, system_label, system_charge, calc_type=calc_type, use_ts=use_ts,
         df_qats=df_qats_dimer,
         basis_set=basis_set,
         n_points=n_points, poly_order=poly_order, remove_outliers=remove_outliers,
@@ -558,7 +558,7 @@ def test_oh_eq():
 
     # Quantum alchemy
     calc_type = 'alchemy'
-    use_qats = False
+    use_ts = False
     bl_manual = {
         'n.h': np.array([0.9671514714434614]),
         'ne.h': np.array([0.9658039189158778]),
@@ -571,7 +571,7 @@ def test_oh_eq():
     }
 
     bl_test, e_test = dimer_eq(
-        df_qc_dimer, system_label, system_charge, calc_type=calc_type,use_qats=use_qats,
+        df_qc_dimer, system_label, system_charge, calc_type=calc_type,use_ts=use_ts,
         df_qats=df_qats_dimer,
         basis_set=basis_set,
         n_points=n_points, poly_order=poly_order, remove_outliers=remove_outliers,
@@ -583,9 +583,9 @@ def test_oh_eq():
     
 
 
-    # APDFT
+    # QATS
     calc_type = 'alchemy'
-    use_qats = True
+    use_ts = True
     bl_manual = {
         'n.h': np.array([1.0378062276064202, 0.9527013676653991, 0.9579026939415882, 1.4, 1.2381960149852107]),
         'ne.h': np.array([1.9, 0.7880503412001761, 0.9328696980518535, 1.151029440166537, 1.1]),
@@ -598,7 +598,7 @@ def test_oh_eq():
     }
 
     bl_test, e_test = dimer_eq(
-        df_qc_dimer, system_label, system_charge, calc_type=calc_type, use_qats=use_qats,
+        df_qc_dimer, system_label, system_charge, calc_type=calc_type, use_ts=use_ts,
         df_qats=df_qats_dimer,
         basis_set=basis_set,
         n_points=n_points, poly_order=poly_order, remove_outliers=remove_outliers,
@@ -620,7 +620,7 @@ def test_ch_bond_lengths_alchemy():
 
 
 
-    use_qats = False
+    use_ts = False
     qa_order = 2
 
     # Reference QC data
@@ -641,8 +641,8 @@ def test_ch_bond_lengths_alchemy():
         qc_system_bl,qc_system_e, n_points=n_points, poly_order=poly_order,
     )
 
-    # APDFT predictions with or without Taylor series.
-    if use_qats:
+    # QATS predictions with or without Taylor series.
+    if use_ts:
         df_selection = 'qats'
     else:
         df_selection = 'qc'
@@ -667,13 +667,13 @@ def test_ch_bond_lengths_alchemy():
             ref_atomic_numbers, target_atomic_numbers, specific_atom=specific_atom
         )
         pred_lambda_values[i] = round(ref_lambda_value)
-        if use_qats:
+        if use_ts:
             pred_system_bl[i], pred_system_e[i] = get_dimer_curve(
-                df_ref_sys, lambda_value=ref_lambda_value, use_qats=use_qats, qa_order=qa_order
+                df_ref_sys, lambda_value=ref_lambda_value, use_ts=use_ts, qa_order=qa_order
             )
         else:
             pred_system_bl[i], pred_system_e[i] = get_dimer_curve(
-                df_ref_sys, lambda_value=ref_lambda_value, use_qats=use_qats
+                df_ref_sys, lambda_value=ref_lambda_value, use_ts=use_ts
             )
         pred_eq_bond_lengths[i], pred_eq_energies[i] = get_dimer_minimum(
             pred_system_bl[i], pred_system_e[i], n_points=n_points, poly_order=poly_order,
@@ -733,11 +733,11 @@ def test_n_ee_qats_correctness():
     }
 
     # Alchemical predictions
-    use_qats = False
-    ee_qats = get_qats_excitation(
+    use_ts = False
+    ee_qats = get_qa_excitation(
         df_qc_atom, df_qats_atom, target_label, target_charge=target_charge,
         excitation_level=excitation_level, basis_set=basis_set,
-        use_qats=use_qats
+        use_ts=use_ts
     )
 
     ee_qats_keys = [i for i in ee_qats.keys()]
@@ -772,11 +772,11 @@ def test_n_ee_qats_correctness():
         ),
     }
 
-    use_qats = True
-    ee_qats = get_qats_excitation(
+    use_ts = True
+    ee_qats = get_qa_excitation(
         df_qc_atom, df_qats_atom, target_label, target_charge=target_charge,
         excitation_level=excitation_level, basis_set=basis_set,
-        use_qats=use_qats
+        use_ts=use_ts
     )
     ee_qats_keys = [i for i in ee_qats.keys()]
     ee_qats_keys.sort()

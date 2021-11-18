@@ -28,7 +28,7 @@ import numpy as np
 
 
 
-data_dir = '../../apdft-atoms-data/data'
+data_dir = '../../qa-atoms-data/data'
 
 only_filename = True  # Instead of printing the absolute path, we print just the filename.
 print_converged = False  # Prints all calculations that are converged.
@@ -120,7 +120,7 @@ def main():
     did_converge = []
 
     print(f'There are a total of {len(all_output_paths)} calculations\n')
-    # Loops through all QCJSON files and adds APDFT information.
+    # Loops through all QCJSON files and adds QATS information.
     for json_path in all_output_paths:
         
         json_dict = read_json(json_path)

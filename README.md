@@ -25,7 +25,7 @@ pip install .
 ### json-data
 
 Cumulative JSON files for atoms and dimers containing quantum chemistry and quantum alchemy data for all species of interest.
-Individual JSON, log files, and explanations for [atoms](https://github.com/keithgroup/apdft-atoms-data) and [dimers](https://github.com/keithgroup/apdft-dimers-data) data can be found in their respective repositories.
+Individual JSON, log files, and explanations for [atoms](https://github.com/keithgroup/qa-atoms-data) and [dimers](https://github.com/keithgroup/qa-dimers-data) data can be found in their respective repositories.
 
 ### qa_tools
 

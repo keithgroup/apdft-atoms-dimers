@@ -240,14 +240,14 @@ def get_qa_refs(
     df_qc, df_qats, target_label, target_n_electrons, basis_set='aug-cc-pV5Z',
     df_selection='qats', excitation_level=None, specific_atom=None,
     direction=None, considered_lambdas=None):
-    """Returns dataframe with all possible APDFT references for a given target system.
+    """Returns dataframe with all possible QATS references for a given target system.
 
     Parameters
     ----------
     df_qc : :obj:`pandas.DataFrame`
         A dataframe with quantum chemistry data.
     df_qats : :obj:`pandas.DataFrame`
-        A dataframe with APDFT data.
+        A dataframe with QATS data.
     target_label : :obj:`str`
         Atoms in the system. For example, ``'c'``, ``'si'``, or ``'f.h'``.
     target_n_electrons : :obj:`int`
@@ -285,7 +285,7 @@ def get_qa_refs(
     Returns
     -------
     :obj:`pandas.DataFrame`
-        Selected qc or apdft dataframe with quantum alchemy references able
+        Selected qc or qats dataframe with quantum alchemy references able
         to predict the desired target.
     """
     if df_selection == 'qats':
@@ -421,21 +421,21 @@ def unify_qc_energies(df1, df2):
     return energies
 
 def add_energies_to_df_qats(df_qc, df_qats):
-    """Adds electronic energy data to the APDFT dataframe.
+    """Adds electronic energy data to the QATS dataframe.
 
-    Information is used to select states out of the APDFT dataframe.
+    Information is used to select states out of the QATS dataframe.
 
     Parameters
     ----------
     df_qc : :obj:`pandas.dataframe`
         The quantum chemistry dataframe.
     df_qats : :obj:`pandas.dataframe`
-        The APDFT dataframe.
+        The QATS dataframe.
     
     Returns
     -------
     :obj:`pandas.dataframe`
-        The APDFT dataframe with the added electronic energy data.
+        The QATS dataframe with the added electronic energy data.
     """
     df_qc = df_qc.query('lambda_value == 0')
 
@@ -515,7 +515,7 @@ def get_multiplicity(df, excitation_level, ignore_one_row=False):
     Parameters
     ----------
     df : :obj:`pandas.dataframe`
-        QC or APDFT dataframe with at least ``atomic_numbers``, ``multiplicity``,
+        QC or QATS dataframe with at least ``atomic_numbers``, ``multiplicity``,
         and ``electronic_energy``.
     excitation_level : :obj:`int`
         Electronic state of the system with respect to the ground state. ``0``

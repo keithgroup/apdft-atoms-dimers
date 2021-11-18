@@ -30,9 +30,9 @@ import numpy as np
 
 overwrite = True
 
-# Dictionary of all calculations desired for the APDFT study.
+# Dictionary of all calculations desired for the QATS study.
 # Organized by system then state where we then define all information needed for
-# the PySCF and APDFT script.
+# the PySCF and QATS script.
 basis_set = 'cc-pV5Z'
 finite_diff_accuracy = '2'
 finite_diff_delta = '0.01'
@@ -195,19 +195,19 @@ f"""#!/bin/bash
 module purge
 
 cd $SLURM_SUBMIT_DIR
-/ihome/crc/install/python/miniconda3-3.7/bin/python apdft-pyscf-calc.py
+/ihome/crc/install/python/miniconda3-3.7/bin/python qa-pyscf-calc.py
 
 crc-job-stats.py
 """
 )
-    with open(job_dir + 'submit-pyscf-apdft.slurm', 'w') as f:
+    with open(job_dir + 'submit-pyscf-qa.slurm', 'w') as f:
         f.write(pitt_crc_orca_submit)
-    with open(job_dir + 'submit-pyscf-apdft.slurm', 'rb') as open_file:
+    with open(job_dir + 'submit-pyscf-qa.slurm', 'rb') as open_file:
         content = open_file.read()
     WINDOWS_LINE_ENDING = b'\r\n'
     UNIX_LINE_ENDING = b'\n'
     content = content.replace(WINDOWS_LINE_ENDING, UNIX_LINE_ENDING)
-    with open(job_dir + 'submit-pyscf-apdft.slurm', 'wb') as open_file:
+    with open(job_dir + 'submit-pyscf-qa.slurm', 'wb') as open_file:
         open_file.write(content)
     
     # Just need to have {{}} for cases were we are not using f-strings here.
@@ -718,7 +718,7 @@ lambda_values = np.arange(min(lambda_limits), max(lambda_limits) + lambda_step, 
 lambda_atom_values = np.array([get_lambda_atom_values(atomic_numbers, l_val) for l_val in lambda_values])
 lambda_qc_data = get_qc_data(qc_method_lower, lambda_atom_values)
 
-# Prepares to do APDFT finite differences.
+# Prepares to do QATS finite differences.
 # Gets a stencil (framework) for computing finite differences of different orders.
 def get_stencil():
     stencil = [{{'coefficients': np.array([1]), "offsets": np.array([0])}}]  # 0th order approximation.
@@ -727,7 +727,7 @@ def get_stencil():
     return stencil
 s = get_stencil()
 
-# Gets all the unique offsets for all APDFT orders in `positions`.
+# Gets all the unique offsets for all QATS orders in `positions`.
 positions = list(set().union(*[set(_["offsets"]) for _ in s]))
 lambdas_fd = [_*finite_diff_delta for _ in positions]
 lambdas_fd_atom_values = np.array([get_lambda_atom_values(atomic_numbers, l_val) for l_val in lambdas_fd])
@@ -745,7 +745,7 @@ for order, stencil in enumerate(s):
     contribution /= np.math.factorial(order)
     poly_coeffs.append(contribution)
 
-# Making APDFT predictions
+# Making QATS predictions
 def qats_pred(poly_coeffs, order, lambda_values):
     return np.polyval(poly_coeffs[:order+1][::-1], lambda_values)
 
@@ -758,8 +758,8 @@ plt.plot(lambda_values, lambda_qc_data['total_energies'], label=f'{{qc_method_la
 for order in range(0, max_qa_order+1):
     plt.plot(
         lambda_values,
-        lambda_qats_energies[order],  # APDFT predictions
-        label=f"APDFT{{order}}",
+        lambda_qats_energies[order],  # QATS predictions
+        label=f"QATS{{order}}",
         marker='o',
         markeredgewidth=0,
         alpha=1.0,
@@ -769,7 +769,7 @@ plt.legend()
 plt.xlabel('$\lambda$')
 plt.ylabel('Energy (Eh)')
 plt.ylim(min(lambda_qc_data['total_energies'])-1, max(lambda_qc_data['total_energies'])+1)
-plt.savefig(f'{{work_dir}}/{{calc_label}}-qc.apdft.energies.png', dpi=1000)
+plt.savefig(f'{{work_dir}}/{{calc_label}}-qc.qa.energies.png', dpi=1000)
 plt.close()
 
 # Plotting error.
@@ -777,14 +777,14 @@ for order in range(0, max_qa_order+1):
     plt.plot(
         lambda_values,
         lambda_qats_energies[order] - lambda_qc_data['total_energies'],
-        label=f"APDFT{{order}}",
+        label=f"QATS{{order}}",
         marker='o',
     )
 plt.legend()
 plt.ylabel("Error [Eh]")
 plt.xlabel("$\lambda$")
 plt.ylim(-1, 1)
-plt.savefig(f'{{work_dir}}/{{calc_label}}-apdft.error.png', dpi=1000)
+plt.savefig(f'{{work_dir}}/{{calc_label}}-qcts.error.png', dpi=1000)
 plt.close()
 
 
@@ -883,7 +883,7 @@ with open(f'{{work_dir}}/{{calc_label}}.json', 'w') as f:
     f.write(json_string)
 """
 )
-    with open(job_dir + 'apdft-pyscf-calc.py', 'w') as f:
+    with open(job_dir + 'qa-pyscf-calc.py', 'w') as f:
         f.write(pyscf_qa_script)
 
 

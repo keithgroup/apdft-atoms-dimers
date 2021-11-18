@@ -35,7 +35,7 @@ def get_qc_pred(
     df_qc : :obj:`pandas.dataframe`
         A dataframe with quantum chemistry data.
     system_label : :obj:`str`
-        The system label of the desired APDFT prediction target. For example,
+        The system label of the desired QATS prediction target. For example,
         `'c'`, `'h'`, etc.
     charge : :obj:`int`
         Total system charge.
@@ -91,7 +91,7 @@ def get_qc_pred(
     return energies
 
 def calc_qats_pred(poly_coeffs, order, lambda_values):
-    """APDFTn predictions using a Taylor series.
+    """QATS-n predictions using a Taylor series.
 
     Parameters
     ----------
@@ -99,14 +99,14 @@ def calc_qats_pred(poly_coeffs, order, lambda_values):
         Polynomial coefficients in decreasing order (e.g., zeroth, first,
         second, etc.).
     order :obj:`int`
-        Highest APDFT order to calculate.
+        Highest QATS order to calculate.
     lambda_values : :obj:`float`, :obj:`list`
         Lambda values to make QC predictions at.
     
     Returns
     -------
     :obj:`numpy.ndarray`
-        APDFTn predictions using a nth order Taylor series.
+        QATS-n predictions using a nth order Taylor series.
     """
     if not isinstance(lambda_values, np.ndarray) \
     or not isinstance(lambda_values, list):
@@ -204,12 +204,12 @@ def get_qc_change_charge(
         e_diff *= -1
     return e_diff
 
-def get_qats_change_charge(
+def get_qa_change_charge(
     df_qc, df_qats, target_label, delta_charge, bond_length=None,
     target_initial_charge=0, change_signs=False, basis_set='aug-cc-pVQZ',
-    use_qats=True, lambda_specific_atom=None, lambda_direction=None,
+    use_ts=True, lambda_specific_atom=None, lambda_direction=None,
     ignore_one_row=True, considered_lambdas=None, compute_difference=False):
-    """Use an APDFT reference to predict the energy change due to adding or
+    """Use an QATS reference to predict the energy change due to adding or
     removing an electron.
 
     Parameters
@@ -220,7 +220,7 @@ def get_qats_change_charge(
         charge, multiplicity, n_electrons, qc_method, basis_set, lambda_range,
         finite_diff_delta, finite_diff_acc, poly_coeff.
     df_qats : :obj:`pandas.DataFrame`
-        A pandas dataframe with APDFT data. It should have the
+        A pandas dataframe with QATS data. It should have the
         following columns (from `get_qats_dframe`): system, atomic_numbers,
         charge, multiplicity, n_electrons, qc_method, basis_set, lambda,
         electronic_energy, hf_energy, and correlation_energy.
@@ -238,9 +238,9 @@ def get_qats_change_charge(
     basis_set : :obj:`str`, optional
         Specifies the basis set to use for predictions. Defaults to
         ``'aug-cc-pVQZ'``.
-    use_qats : :obj:`bool`, optional
+    use_ts : :obj:`bool`, optional
         Use a Taylor series approximation (with finite differences) to make
-        APDFTn predictions (where n is the order). Defaults to ``True``.
+        QATS-n predictions (where n is the order). Defaults to ``True``.
     lambda_specific_atom : :obj:`int`, optional
         Applies the entire lambda change to a single atom in dimers. For
         example, OH -> FH+ would be a lambda change of +1 only on the first
@@ -261,7 +261,7 @@ def get_qats_change_charge(
         will allow all lambdas to be valid, ``[1, -1]`` would only report
         predictions using references using a lambda of ``1`` or ``-1``.
     compute_difference : :obj:`bool`, optional
-        Return the difference of APDFTn - APDFT predictions; i.e., the error of
+        Return the difference of QATS-n - QATS predictions; i.e., the error of
         using a Taylor series approximation with repsect to the alchemical
         potential energy surface. Defaults to ``False``.
     
@@ -269,7 +269,7 @@ def get_qats_change_charge(
     -------
     :obj:`dict`
     """
-    if compute_difference: assert use_qats == True
+    if compute_difference: assert use_ts == True
     if len(df_qc.iloc[0]['atomic_numbers']) == 2: assert bond_length is not None
     assert delta_charge != 0
     if delta_charge < 0: assert change_signs == True
@@ -363,7 +363,7 @@ def get_qats_change_charge(
             if lambda_initial not in considered_lambdas:
                 continue
 
-        if use_qats or compute_difference == True:
+        if use_ts or compute_difference == True:
             order_preds = []
             for order in range(len(ref_initial.iloc[0]['poly_coeff'])):
                 e_target_initial = calc_qats_pred(
@@ -378,7 +378,7 @@ def get_qats_change_charge(
                     e_diff *= -1
                 order_preds.append(e_diff)
             predictions[system] = np.array(order_preds)
-        if not use_qats or compute_difference == True:
+        if not use_ts or compute_difference == True:
             chrg_ref_initial = ref_initial.iloc[0]['charge']
             mult_ref_initial = ref_initial.iloc[0]['multiplicity']
             ref_initial_qc = df_qc.query(
@@ -454,7 +454,7 @@ def get_dimer_minimum(bond_lengths, energies, n_points=2, poly_order=4,
     )
     return eq_bond_length, eq_energy
 
-def get_dimer_curve(df, lambda_value=None, use_qats=False, qa_order=None):
+def get_dimer_curve(df, lambda_value=None, use_ts=False, qa_order=None):
     """Bond lengths and their respective electronic energies.
 
     There should only be one system left in the dataframe.
@@ -462,22 +462,22 @@ def get_dimer_curve(df, lambda_value=None, use_qats=False, qa_order=None):
     Parameters
     ----------
     df : :obj:`pandas.dataframe`
-        A quantum chemistry or APDFT dataframe.
+        A quantum chemistry or QATS dataframe.
     lambda_value : :obj:`float`
         Desired lambda value if more than one in the dataframe if finite
         differences are required.
-    use_qats : :obj:`bool`, optional
-        Make APDFTn predictions using Taylor series approximation with
+    use_ts : :obj:`bool`, optional
+        Make QATS-n predictions using Taylor series approximation with
         derivatives from finite differences. Defaults to ``False``.
     qa_order : :obj:`int`, optional
-        Taylor series order to be used in APDFT predictions.
+        Taylor series order to be used in QATS predictions.
     
     Returns
     -------
     :obj:`numpy.ndarray`
         All considered bond lengths available for a system.
     """
-    if use_qats:
+    if use_ts:
         assert 'poly_coeff' in df.columns
         assert qa_order is not None
         bond_length_order = np.argsort(df['bond_length'].values)
@@ -505,7 +505,7 @@ def get_dimer_curve(df, lambda_value=None, use_qats=False, qa_order=None):
 
 def dimer_binding_curve(
     df_qc, system_label, system_charge, excitation_level=0, calc_type='qc',
-    use_qats=False, df_qats=None, specific_atom=0,
+    use_ts=False, df_qats=None, specific_atom=0,
     direction=None, basis_set='cc-pV5Z', n_points=2, poly_order=4,
     remove_outliers=False, zscore_cutoff=3.0, considered_lambdas=None):
     """Compute the equilbirum bond length and energy using a polynomial fit.
@@ -525,9 +525,9 @@ def dimer_binding_curve(
         Specifies the method of the calculation. Can either be ``'qc'`` or
         ``'alchemy'``. Defaults to ``'qc'``.
     df_qats : :obj:`pandas.DataFrame`, optional
-        APDFT dataframe. Needs to be specified if ``calc_type == 'alchemy'``.
+        QATS dataframe. Needs to be specified if ``calc_type == 'alchemy'``.
     qa_order : :obj:`int`, optional
-        Taylor series order used for APDFT predictions. Defaults to ``2``.
+        Taylor series order used for QATS predictions. Defaults to ``2``.
     basis_set : :obj:`str`, optional
         Specifies the basis set to use for predictions. Defaults to
         ``'cc-pV5Z'``.
@@ -581,7 +581,7 @@ def dimer_binding_curve(
     elif calc_type == 'alchemy':
         sys_n_electron = df_sys.iloc[0]['n_electrons']
         sys_atomic_numbers = df_sys.iloc[0]['atomic_numbers']
-        if use_qats:
+        if use_ts:
             assert df_qats is not None
             df_selection = 'qats'
         else:
@@ -609,10 +609,10 @@ def dimer_binding_curve(
                 if ref_lambda_value not in considered_lambdas:
                     continue
             
-            if not use_qats:
+            if not use_ts:
                 bl_ref, e_ref = get_dimer_curve(
                     df_ref, lambda_value=ref_lambda_value,
-                    use_qats=use_qats, qa_order=None
+                    use_ts=use_ts, qa_order=None
                 )
             else:
                 bl_ref = []
@@ -622,7 +622,7 @@ def dimer_binding_curve(
                 for qa_order in range(max_qa_order):
                     bl_ref_order, e_ref_order = get_dimer_curve(
                         df_ref, lambda_value=ref_lambda_value,
-                        use_qats=use_qats, qa_order=qa_order
+                        use_ts=use_ts, qa_order=qa_order
                     )
                     bl_ref.append(bl_ref_order)
                     e_ref.append(e_ref_order)
@@ -636,7 +636,7 @@ def dimer_binding_curve(
 
 def dimer_eq(
     df_qc, system_label, system_charge, excitation_level=0, calc_type='qc',
-    use_qats=False, df_qats=None, specific_atom=0,
+    use_ts=False, df_qats=None, specific_atom=0,
     direction=None, basis_set='cc-pV5Z', n_points=2, poly_order=4,
     remove_outliers=False, zscore_cutoff=3.0, considered_lambdas=None):
     """Compute the equilbirum bond length and energy using a polynomial fit.
@@ -656,9 +656,9 @@ def dimer_eq(
         Specifies the method of the calculation. Can either be ``'qc'`` or
         ``'alchemy'``. Defaults to ``'qc'``.
     df_qats : :obj:`pandas.DataFrame`, optional
-        APDFT dataframe. Needs to be specified if ``calc_type == 'alchemy'``.
+        QATS dataframe. Needs to be specified if ``calc_type == 'alchemy'``.
     qa_order : :obj:`int`, optional
-        Taylor series order used for APDFT predictions. Defaults to ``2``.
+        Taylor series order used for QATS predictions. Defaults to ``2``.
     basis_set : :obj:`str`, optional
         Specifies the basis set to use for predictions. Defaults to
         ``'cc-pV5Z'``.
@@ -694,7 +694,7 @@ def dimer_eq(
     
     bl_dict, e_dict = dimer_binding_curve(
         df_qc, system_label, system_charge, excitation_level=excitation_level,
-        calc_type=calc_type, use_qats=use_qats, df_qats=df_qats,
+        calc_type=calc_type, use_ts=use_ts, df_qats=df_qats,
         specific_atom=specific_atom, direction=direction, basis_set=basis_set,
         n_points=n_points, poly_order=poly_order,
         remove_outliers=remove_outliers, zscore_cutoff=zscore_cutoff,
@@ -786,7 +786,7 @@ def get_qc_change_charge_dimer(
     )
     target_initial_n_electrons = target_initial_qc.n_electrons.values[0]
     target_initial_bond_lengths, target_initial_energies = get_dimer_curve(
-        target_initial_qc, lambda_value=None, use_qats=False,
+        target_initial_qc, lambda_value=None, use_ts=False,
         qa_order=None
     )
     _, target_initial_energy = get_dimer_minimum(
@@ -809,7 +809,7 @@ def get_qc_change_charge_dimer(
         'multiplicity == @ground_multiplicity_final'
     )
     target_final_bond_lengths, target_final_energies = get_dimer_curve(
-        target_final_qc, lambda_value=None, use_qats=False, qa_order=None
+        target_final_qc, lambda_value=None, use_ts=False, qa_order=None
     )
     _, target_final_energy = get_dimer_minimum(
         target_final_bond_lengths, target_final_energies, n_points=n_points,
@@ -822,13 +822,13 @@ def get_qc_change_charge_dimer(
         e_diff *= -1
     return e_diff
 
-def get_qats_change_charge_dimer(
+def get_qa_change_charge_dimer(
     df_qc, df_qats, target_label, delta_charge,
     target_initial_charge=0, change_signs=False, basis_set='cc-pV5Z',
-    use_qats=True, lambda_specific_atom=None, lambda_direction=None,
+    use_ts=True, lambda_specific_atom=None, lambda_direction=None,
     ignore_one_row=True, poly_order=4, n_points=2, remove_outliers=False,
     considered_lambdas=None, compute_difference=False):
-    """Use an APDFT reference to predict the energy change due to adding or
+    """Use an QATS reference to predict the energy change due to adding or
     removing an electron to dimers.
 
     The minimum energy from a fitted parabola is used for each state.
@@ -841,7 +841,7 @@ def get_qats_change_charge_dimer(
         charge, multiplicity, n_electrons, qc_method, basis_set, lambda_range,
         finite_diff_delta, finite_diff_acc, poly_coeff.
     df_qats : :obj:`pandas.DataFrame`
-        A pandas dataframe with APDFT data. It should have the
+        A pandas dataframe with QATS data. It should have the
         following columns (from `get_qats_dframe`): system, atomic_numbers,
         charge, multiplicity, n_electrons, qc_method, basis_set, lambda,
         electronic_energy, hf_energy, and correlation_energy.
@@ -859,9 +859,9 @@ def get_qats_change_charge_dimer(
     basis_set : :obj:`str`, optional
         Specifies the basis set to use for predictions. Defaults to
         ``'cc-pVQZ'``.
-    use_qats : :obj:`bool`, optional
+    use_ts : :obj:`bool`, optional
         Use a Taylor series approximation (with finite differences) to make
-        APDFTn predictions (where n is the order). Defaults to ``True``.
+        QATS-n predictions (where n is the order). Defaults to ``True``.
     lambda_specific_atom : :obj:`int`, optional
         Applies the entire lambda change to a single atom in dimers. For
         example, OH -> FH+ would be a lambda change of +1 only on the first
@@ -890,13 +890,13 @@ def get_qats_change_charge_dimer(
         will allow all lambdas to be valid, ``[1, -1]`` would only report
         predictions using references using a lambda of ``1`` or ``-1``.
     compute_difference : :obj:`bool`, optional
-        Return the difference of APDFTn - APDFT predictions; i.e., the error of
+        Return the difference of QATS-n - QATS predictions; i.e., the error of
         using a Taylor series approximation with repsect to the alchemical
         potential energy surface. Defaults to ``False``.
     """    
     assert delta_charge != 0
     assert len(df_qc.iloc[0]['atomic_numbers']) == 2
-    if compute_difference: assert use_qats == True
+    if compute_difference: assert use_ts == True
 
     # Selects initial target ground state QC data.
     target_initial_qc = df_qc[
@@ -981,11 +981,11 @@ def get_qats_change_charge_dimer(
         bond_length_order_initial = np.argsort(ref_initial['bond_length'].values)
         bond_length_order_final = np.argsort(ref_final['bond_length'].values)
 
-        if use_qats or compute_difference == True:
+        if use_ts or compute_difference == True:
             order_preds = []
             for order in range(len(ref_initial.iloc[0]['poly_coeff'])):
                 bond_lengths_initial, energies_initial = get_dimer_curve(
-                    ref_initial, lambda_value=lambda_initial, use_qats=True,
+                    ref_initial, lambda_value=lambda_initial, use_ts=True,
                     qa_order=order
                 )
                 _, e_target_initial = get_dimer_minimum(
@@ -994,7 +994,7 @@ def get_qats_change_charge_dimer(
                 )
 
                 bond_lengths_final, energies_final = get_dimer_curve(
-                    ref_final, lambda_value=lambda_final, use_qats=True,
+                    ref_final, lambda_value=lambda_final, use_ts=True,
                     qa_order=order
                 )
                 _, e_target_final = get_dimer_minimum(
@@ -1007,7 +1007,7 @@ def get_qats_change_charge_dimer(
                     e_diff *= -1
                 order_preds.append(e_diff)
             predictions[system] = np.array(order_preds)
-        if not use_qats or compute_difference == True:
+        if not use_ts or compute_difference == True:
             chrg_ref_initial = ref_initial.iloc[0]['charge']
             mult_ref_initial = ref_initial.iloc[0]['multiplicity']
             ref_initial_qc = df_qc.query(
@@ -1017,7 +1017,7 @@ def get_qats_change_charge_dimer(
                 '& basis_set == @basis_set'
             )
             bond_lengths_initial, energies_initial = get_dimer_curve(
-                ref_initial_qc, lambda_value=lambda_initial, use_qats=False,
+                ref_initial_qc, lambda_value=lambda_initial, use_ts=False,
                 qa_order=None
             )
             _, e_target_initial = get_dimer_minimum(
@@ -1034,7 +1034,7 @@ def get_qats_change_charge_dimer(
                 '& basis_set == @basis_set'
             )
             bond_lengths_final, energies_final = get_dimer_curve(
-                ref_final_qc, lambda_value=lambda_final, use_qats=False, qa_order=None
+                ref_final_qc, lambda_value=lambda_final, use_ts=False, qa_order=None
             )
             _, e_target_final = get_dimer_minimum(
                 bond_lengths_final, energies_final, n_points=n_points,
@@ -1096,9 +1096,9 @@ def get_qc_excitation(
              - target_initial_qc.iloc[0]['electronic_energy']
     return e_diff
 
-def get_qats_excitation(
+def get_qa_excitation(
     df_qc, df_qats, target_label, target_charge=0, excitation_level=1,
-    basis_set='aug-cc-pVQZ', use_qats=True, ignore_one_row=True,
+    basis_set='aug-cc-pVQZ', use_ts=True, ignore_one_row=True,
     considered_lambdas=None, compute_difference=False
 ):
     """Calculate excitation energies using a quantum-chemistry dataframe.
@@ -1114,7 +1114,7 @@ def get_qats_excitation(
         will allow all lambdas to be valid, ``[1, -1]`` would only report
         predictions using references using a lambda of ``1`` or ``-1``.
     compute_difference : :obj:`bool`, optional
-        Return the difference of APDFTn - APDFT predictions; i.e., the error of
+        Return the difference of QATS-n - QATS predictions; i.e., the error of
         using a Taylor series approximation with repsect to the alchemical
         potential energy surface.
 
@@ -1124,7 +1124,7 @@ def get_qats_excitation(
         The excitation energy in Hartrees.
     """
     if compute_difference:
-        assert use_qats == True
+        assert use_ts == True
 
     # Selects initial target ground state QC data.
     target_qc = df_qc[
@@ -1188,7 +1188,7 @@ def get_qats_excitation(
             if lambda_initial not in considered_lambdas:
                 continue
 
-        if use_qats or compute_difference == True:
+        if use_ts or compute_difference == True:
             order_preds = []
             for order in range(len(ref_initial.iloc[0]['poly_coeff'])):
                 e_target_initial = calc_qats_pred(ref_initial.iloc[0]['poly_coeff'], order, lambda_initial)
@@ -1196,7 +1196,7 @@ def get_qats_excitation(
                 e_diff = (e_target_final - e_target_initial)[0]
                 order_preds.append(e_diff)
             predictions[system] = np.array(order_preds)
-        if not use_qats or compute_difference == True:
+        if not use_ts or compute_difference == True:
             chrg_ref_initial = ref_initial.iloc[0]['charge']
             mult_ref_initial = ref_initial.iloc[0]['multiplicity']
             

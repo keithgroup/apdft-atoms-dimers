@@ -409,7 +409,7 @@ def get_qc_df_cbs(
     return df_cbs
 
 def get_qats_dframe(json_dict):
-    """Prepares a Pandas dataframe of APDFT-relevant data.
+    """Prepares a Pandas dataframe of QATS-relevant data.
 
     Parameters
     ----------
@@ -452,21 +452,21 @@ def get_qats_df_cbs(
     max_qa_order=4, finite_diff_delta=0.01,
     finite_diff_acc=2,
 ):
-    """Adds APDFT rows from CBS extrapolated data to a dataframe.
+    """Adds QATS rows from CBS extrapolated data to a dataframe.
 
     Parameters
     ----------
     df_qc : :obj:`pandas.DataFrame`
         A dataframe with quantum chemistry data.
     df_qats : :obj:`pandas.DataFrame`
-        A dataframe with APDFT data.
+        A dataframe with QATS data.
     cbs_basis_key : :obj:`str`, optional
         Which basis set family to extrapolate. Must be keys of the extrapolation
         dictionaries.
     basis_set_higher : :obj:`str`, optional
         The larger basis set (with a higher cardinal number).
     max_qa_order : :obj:`int`, optional
-        The maximum APDFT order desired. Defaults to four.
+        The maximum QATS order desired. Defaults to four.
     finite_diff_delta : :obj:`float`
         The deviation from x0 for each point.
     finite_diff_acc : :obj:`int`, optional
@@ -476,7 +476,7 @@ def get_qats_df_cbs(
     Returns
     -------
     :obj:`pandas.DataFrame`
-        APDFT dataframe with added CBS extrapolated data.
+        QATS dataframe with added CBS extrapolated data.
     """
     stencils = [{'coefficients': np.array([1]), "offsets": np.array([0])}]  # 0th order approximation.
     for order in range(1, max_qa_order+1):
@@ -485,7 +485,7 @@ def get_qats_df_cbs(
                 deriv=order, acc=finite_diff_acc
             )['center']
         )
-    # Gets all the unique offsets for all APDFT orders in `positions`.
+    # Gets all the unique offsets for all QATS orders in `positions`.
     positions = list(set().union(*[set(_["offsets"]) for _ in stencils]))
     required_lambdas = [_*finite_diff_delta for _ in positions]
 
@@ -524,7 +524,7 @@ def get_qats_df_cbs(
                     np.sort(required_lambdas)
                 )
             except AssertionError:
-                print('Missing or incorrect APDFT calculations for:')
+                print('Missing or incorrect QATS calculations for:')
                 print(df_findiff, '\n')
                 continue
         lambdas_fd = df_findiff.lambda_value.values.tolist()
@@ -574,7 +574,7 @@ def prepare_dfs(json_path, get_CBS=False, only_converged=False):
     :obj:`pandas.DataFrame`
         The quantum chemistry dataframe.
     :obj:`pandas.DataFrame`
-        The APDFT dataframe.
+        The QATS dataframe.
     """
     data_dict = read_json(json_path)
     df_qc = get_qc_dframe(data_dict, only_converged=only_converged)
