@@ -11,12 +11,12 @@ Python3 with the following packages:
 
 ## Installation
 
-In order to use, reproduce, and analyze quantum alchemy atom and dimer data you need to install the `qa_tools` package from the [GitHub repository](https://github.com/keithgroup/apdft-atoms-dimers).
+In order to use, reproduce, and analyze quantum alchemy atom and dimer data you need to install the `qa_tools` package from the [GitHub repository](https://github.com/keithgroup/qa-atoms-dimers).
 You just have to clone and install the GitHub repo like so.
 
 ```text
-git clone https://github.com/keithgroup/apdft-atoms-dimers
-cd apdft-atoms-dimers
+git clone https://github.com/keithgroup/qa-atoms-dimers
+cd qa-atoms-dimers
 pip install .
 ```
 

@@ -30,7 +30,7 @@ setup(
     name='qa_tools',
     version='0.0.1',
     author='Alex M. Maldonado',
-    url='https://github.com/keithgroup/mbGDML/apdft-atoms-dimers',
+    url='https://github.com/keithgroup/qa-atoms-dimers',
     packages=['qa_tools',],
     install_requires=requirements,
     long_description=open('README.md').read(),
