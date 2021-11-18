@@ -170,7 +170,7 @@ def _json_parse_qats(system_label, json_calc):
     )
     df_dict['finite_diff_delta'] = json_calc['finite_diff_delta']
     df_dict['finite_diff_acc'] = json_calc['finite_diff_acc']
-    df_dict['poly_coeff'] = np.array(json_calc['qats_poly_coeffs'])
+    df_dict['poly_coeffs'] = np.array(json_calc['qats_poly_coeffs'])
     if len(df_dict['atomic_numbers']) == 2:
         geo = np.array(json_calc['molecule']['geometry'])
         df_dict['bond_length'] = _calc_distance(geo[0], geo[1])
@@ -552,7 +552,7 @@ def get_qats_df_cbs(
         df_qats_template['basis_set'] = f'CBS-{cbs_basis_key}'
         df_qats_template['finite_diff_delta'] = finite_diff_delta
         df_qats_template['finite_diff_acc'] = finite_diff_acc
-        df_qats_template['poly_coeff'] = np.array(poly_coeffs)
+        df_qats_template['poly_coeffs'] = np.array(poly_coeffs)
         df_cbs_prelim.append(df_qats_template)
     
     df_cbs_prelim = pd.DataFrame(df_cbs_prelim)

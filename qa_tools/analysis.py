@@ -216,7 +216,7 @@ def get_qats_errors(
             ref_sys_label = qats_row['system']
             ref_atomic_numbers = qats_row['atomic_numbers']
             ref_charge = qats_row['charge']
-            ref_poly_coeffs = qats_row['poly_coeff']
+            ref_poly_coeffs = qats_row['poly_coeffs']
 
             lambda_value = get_lambda_value(
                 ref_atomic_numbers, target_atomic_numbers, specific_atom=specific_atom,
@@ -234,7 +234,7 @@ def get_qats_errors(
 
             # QATS prediction
             sys_qats_energies.append(
-                calc_qats_pred(
+                qats_prediction(
                     ref_poly_coeffs, qats_order, lambda_value
                 )[0]
             )
@@ -299,13 +299,13 @@ def qats_error_change_charge(
     """Computes QATS errors in change the charge of a system.
     """
     qc_prediction = hartree_to_ev(
-        get_qc_change_charge(
+        energy_change_charge_qc_atom(
             df_qc, target_label, delta_charge,
             target_initial_charge=target_initial_charge,
             change_signs=change_signs, basis_set=basis_set
         )
     )
-    qats_predictions = get_qa_change_charge(
+    qats_predictions = energy_change_charge_qa_atom(
         df_qc, df_qats, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,

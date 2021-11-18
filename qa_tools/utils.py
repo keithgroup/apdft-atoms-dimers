@@ -369,57 +369,6 @@ def get_qa_refs(
 
     return df_ref
 
-def unify_qc_energies(df1, df2):
-    """Ensures that energies from compatible methods can be compared.
-
-    HF on one-electron systems can be directly compared to CC energies. However,
-    CCSD cannot be compared with CCSD(T) because of the triples corrections.
-
-    Parameters
-    ----------
-    df1 : :obj:`pandas.DataFrame`
-        A pandas dataframe. Must have `'electronic_energy'` as a column.
-    df2 : :obj:`pandas.DataFrame`
-        A pandas dataframe. Must have `'electronic_energy'` as a column.
-    
-    Returns
-    -------
-    :obj:`set`
-        All unique quantum chemistry methods in the dataframe.
-    """
-    assert len(df1) == 1 and len(df2) == 1
-    dfs = [df1.iloc[0], df2.iloc[0]]
-    energies = [dfs[0]['electronic_energy'], dfs[1]['electronic_energy']]
-
-    # Checks that methods are the same (HF with HF, CCSD with CCSD, etc.)
-    target_initial_method = dfs[0]['qc_method']
-    target_final_method = dfs[1]['qc_method']
-    if 'HF' in target_initial_method or 'CCSD' in target_initial_method:
-        target_initial_method = target_initial_method.replace('U', '')
-    if 'HF' in target_final_method or 'CCSD' in target_final_method:
-        target_final_method = target_final_method.replace('U', '')
-    methods = (target_initial_method, target_final_method)
-
-    if target_initial_method != target_final_method:
-        if 'HF' in methods and 'CCSD' in methods:
-            # If the number of electrons in the HF calculation is 1, then
-            # HF is equal to couple cluster.
-            n_electrons = (dfs[0]['n_electrons'], dfs[1]['n_electrons'])
-            i_hf = methods.index('HF')
-            if n_electrons[i_hf] != 1:
-                raise ValueError(methods, ' are not compatible.')
-        elif 'CCSD' in methods and 'CCSD(T)' in methods:
-            # Cannot directly compare CCSD and CCSD(T). Here, we remove the
-            # triples corrections from the CCSD(T) data to make it directly
-            # comparable.
-            i_ccsdt = methods.index('CCSD(T)')  # 0 = initial, 1 = final
-
-            # Converts CCSD(T) to CCSD
-            energies[i_ccsdt] -= dfs[i_ccsdt]['triples_correction']
-        else:
-            raise ValueError(f'Methods {methods} are not compatible.')
-    return energies
-
 def add_energies_to_df_qats(df_qc, df_qats):
     """Adds electronic energy data to the QATS dataframe.
 
@@ -618,7 +567,8 @@ def fit_dimer_poly(bond_lengths, energies, n_points=2, poly_order=4,
     -------
     :obj:`numpy.ndarray`
         The polynomial coefficients representing the minimum of the bond length
-        curve. In order decreasing degree coefficients.
+        curve. Coefficients need to be in decreasing order (i.e., fourth, 
+        third, second, etc.).
     """
     idx_sort = np.argsort(bond_lengths)
     bond_lengths = bond_lengths[idx_sort]
@@ -653,7 +603,8 @@ def _dimer_poly_pred(bond_length, poly_coeffs):
         The bond_length of the dimer (x value).
     poly_coeffs : :obj:`numpy.ndarray`
         The polynomial coefficients representing the minimum of the bond length
-        curve. In order decreasing degree coefficients.
+        curve. Coefficients need to be in decreasing order (i.e., fourth, 
+        third, second, etc.).
     """
     return np.polyval(poly_coeffs, bond_length)
 
@@ -670,8 +621,8 @@ def find_poly_min(fit_bond_lengths, poly_coeffs):
         minimizer.
     poly_coeffs : :obj:`numpy.ndarray`
         The polynomial coefficients representing the minimum of the bonding
-        curve. Coefficients need to be in order of decreasing degree
-        coefficients.
+        curve. Coefficients need to be in decreasing order (i.e., fourth, 
+        third, second, etc.).
     
     Returns
     -------

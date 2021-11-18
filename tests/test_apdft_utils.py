@@ -71,7 +71,7 @@ def test_add_energies_to_qats_atoms_7elec():
         row = df_qats_refs.iloc[i]
         assert np.allclose(
             np.array([row['electronic_energy']]),
-            np.array(row['poly_coeff'])[0]
+            np.array(row['poly_coeffs'])[0]
         )
 
 def test_get_lambda_values_dimers():

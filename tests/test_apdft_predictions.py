@@ -51,7 +51,7 @@ def test_poly_prediction():
         'system == "c" & charge == 0 & multiplicity == 3 & basis_set == "aug-cc-pV5Z"'
     )
     assert len(df_state) == 1
-    poly_coeff = df_state.iloc[0]['poly_coeff']
+    poly_coeff = df_state.iloc[0]['poly_coeffs']
     poly_coef_manual = np.array(  # c.chrg0.mult3
         [-37.819523645273655, -14.692113455939193, -1.5080067837658362,
            0.008594331172654771, 0.0012684372071210721]
@@ -60,7 +60,7 @@ def test_poly_prediction():
 
     # Check prediction of lambda = 1.
     poly_pred_lambda1_manual = np.array([np.sum(poly_coef_manual)])
-    poly_pred_lambda1 = calc_qats_pred(poly_coeff, 4, 1)
+    poly_pred_lambda1 = qats_prediction(poly_coeff, 4, 1)
     assert type(poly_pred_lambda1) == np.ndarray
     assert np.allclose(
         np.array(poly_pred_lambda1_manual), np.array(-54.0097811165989083569)
@@ -77,17 +77,15 @@ def test_n_ie1_qc_correctness():
     target_initial_charge = 0
     change_signs = False
     basis_set = 'aug-cc-pV5Z'
-    force_same_method = False
 
     e_chrg0_ground = -54.56266526988731
     e_chrg1_ground = -54.02830363594568
     ie1_manual = e_chrg1_ground - e_chrg0_ground
 
-    ie1_df = get_qc_change_charge(
+    ie1_df = energy_change_charge_qc_atom(
         df_qc_atom, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
-        change_signs=change_signs, basis_set=basis_set,
-        force_same_method=force_same_method
+        change_signs=change_signs, basis_set=basis_set
     )
     assert ie1_manual == ie1_df
 
@@ -97,8 +95,6 @@ def test_n_ie1_qats_correctness():
     target_initial_charge = 0
     change_signs = False
     basis_set = 'aug-cc-pV5Z'
-    lambda_specific_atom = None
-    lambda_direction = None
 
     e_chrg0_ground_bref = -54.386726697042256  # b.chrg-2.mult4; lambda = 2
     e_chrg1_ground_bref = -53.854313096059066  # b.chrg-1.mult3; lambda = 2
@@ -116,12 +112,10 @@ def test_n_ie1_qats_correctness():
 
     # Alchemical predictions
     use_ts = False
-    ie1_qats = get_qa_change_charge(
+    ie1_qats = energy_change_charge_qa_atom(
         df_qc_atom, df_qats_atom, target_label, delta_charge,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
         basis_set=basis_set, use_ts=use_ts,
-        lambda_specific_atom=lambda_specific_atom,
-        lambda_direction=lambda_direction
     )
 
     ie1_qats_keys = [i for i in ie1_qats.keys()]
@@ -141,23 +135,21 @@ def test_n_ie1_qats_correctness():
     poly_coef_chrg1_ground_oref = np.array([-73.2470934104361, -20.716783121350346, -1.5003953162562311, 0.0036310462784664797, 0.001525535253676935])  # o.chrg2.mult3; lambda = -1
     ie1_qats_manual = {
         'b': np.array(
-            [calc_qats_pred(poly_coef_chrg1_ground_bref, i, 2)[0] - calc_qats_pred(poly_coef_chrg0_ground_bref, i, 2)[0] for i in range(0, 4+1)]
+            [qats_prediction(poly_coef_chrg1_ground_bref, i, 2)[0] - qats_prediction(poly_coef_chrg0_ground_bref, i, 2)[0] for i in range(0, 4+1)]
         ),
         'c': np.array(
-            [calc_qats_pred(poly_coef_chrg1_ground_cref, i, 1)[0] - calc_qats_pred(poly_coef_chrg0_ground_cref, i, 1)[0] for i in range(0, 4+1)]
+            [qats_prediction(poly_coef_chrg1_ground_cref, i, 1)[0] - qats_prediction(poly_coef_chrg0_ground_cref, i, 1)[0] for i in range(0, 4+1)]
         ),
         'o': np.array(
-            [calc_qats_pred(poly_coef_chrg1_ground_oref, i, -1)[0] - calc_qats_pred(poly_coef_chrg0_ground_oref, i, -1)[0] for i in range(0, 4+1)]
+            [qats_prediction(poly_coef_chrg1_ground_oref, i, -1)[0] - qats_prediction(poly_coef_chrg0_ground_oref, i, -1)[0] for i in range(0, 4+1)]
         ),
     }
 
     use_ts = True
-    ie1_qats = get_qa_change_charge(
+    ie1_qats = energy_change_charge_qa_atom(
         df_qc_atom, df_qats_atom, target_label, delta_charge,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
         basis_set=basis_set, use_ts=use_ts,
-        lambda_specific_atom=lambda_specific_atom,
-        lambda_direction=lambda_direction
     )
 
     ie1_qats_keys = [i for i in ie1_qats.keys()]
@@ -167,30 +159,6 @@ def test_n_ie1_qats_correctness():
         assert np.array_equal(
             ie1_qats[key], ie1_qats_manual[key]
         )
-
-"""
-def test_ch_ie1_qc_correctness():
-    target_label = 'c.h'
-    delta_charge = 1
-    target_initial_charge = 0
-    change_signs = False
-    basis_set = 'cc-pV5Z'
-    force_same_method = False
-    bond_length = 1.1
-
-    e_chrg0_ground = -38.45347656174365
-    e_chrg1_ground = -38.06281576385865
-    ie1_manual = e_chrg1_ground - e_chrg0_ground
-    
-    ie1_df = get_qc_change_charge(
-        df_qc_dimer, target_label, delta_charge,
-        target_initial_charge=target_initial_charge,
-        change_signs=change_signs, basis_set=basis_set,
-        force_same_method=force_same_method,
-        bond_length=bond_length
-    )
-    assert ie1_manual == ie1_df
-"""
 
 def test_ch_ie1_qc_dimer_correctness():
     target_label = 'c.h'
@@ -213,11 +181,11 @@ def test_ch_ie1_qc_dimer_correctness():
     df_qc_sys_chrg1 = df_qc.query(
         'system == "c.h" & charge == 1 & lambda_value == 0 & multiplicity == 1'
     )
-    bond_lengths_chrg0_eq, e_chrg0_eq = get_dimer_minimum(
+    bond_lengths_chrg0_eq, e_chrg0_eq = dimer_minimum(
         bond_lengths_chrg0, e_chrg0, n_points=n_points, poly_order=poly_order,
         remove_outliers=False, zscore_cutoff=3.0
     )
-    bond_lengths_chrg1_eq, e_chrg1_eq = get_dimer_minimum(
+    bond_lengths_chrg1_eq, e_chrg1_eq = dimer_minimum(
         bond_lengths_chrg1, e_chrg1, n_points=n_points, poly_order=poly_order,
         remove_outliers=False, zscore_cutoff=3.0
     )
@@ -250,7 +218,7 @@ def test_bond_lengths_qats_ch_from_bh():
         -38.38141483069795, -38.36692691826404, -38.35268868360573,
         -38.33896887440571, -38.32589894564336]
     )
-    bond_lengths, energies = get_dimer_curve(
+    bond_lengths, energies = dimer_curve(
         df_qats_ref, lambda_value=lambda_value, use_ts=True, qats_order=2,
     )
     assert np.array_equal(bond_lengths_manual, bond_lengths)
@@ -314,17 +282,17 @@ def test_ch_ie1_qats_dimer_correctness():
     bh_lambda_value = 1
     nh_lambda_value = -1
 
-    bh_bond_lengths_initial, bh_e_initial = get_dimer_curve(
+    bh_bond_lengths_initial, bh_e_initial = dimer_curve(
         df_qats_bh_initial, lambda_value=bh_lambda_value, use_ts=True, qats_order=qats_order
     )
-    bh_bond_lengths_final, bh_e_final = get_dimer_curve(
+    bh_bond_lengths_final, bh_e_final = dimer_curve(
         df_qats_bh_final, lambda_value=bh_lambda_value, use_ts=True, qats_order=qats_order
     )
-    bh_bond_lengths_initial_eq, bh_e_initial_eq = get_dimer_minimum(
+    bh_bond_lengths_initial_eq, bh_e_initial_eq = dimer_minimum(
         bh_bond_lengths_initial, bh_e_initial, n_points=n_points, poly_order=poly_order,
         remove_outliers=remove_outliers, zscore_cutoff=3.0
     )
-    bh_bond_lengths_final_eq, bh_e_final_eq = get_dimer_minimum(
+    bh_bond_lengths_final_eq, bh_e_final_eq = dimer_minimum(
         bh_bond_lengths_final, bh_e_final, n_points=n_points, poly_order=poly_order,
         remove_outliers=remove_outliers, zscore_cutoff=3.0
     )
@@ -333,17 +301,17 @@ def test_ch_ie1_qats_dimer_correctness():
 
     
 
-    nh_bond_lengths_initial, nh_e_initial = get_dimer_curve(
+    nh_bond_lengths_initial, nh_e_initial = dimer_curve(
         df_qats_nh_initial, lambda_value=nh_lambda_value, use_ts=True, qats_order=qats_order
     )
-    nh_bond_lengths_final, nh_e_final = get_dimer_curve(
+    nh_bond_lengths_final, nh_e_final = dimer_curve(
         df_qats_nh_final, lambda_value=nh_lambda_value, use_ts=True, qats_order=qats_order
     )
-    nh_bond_lengths_initial_eq, nh_e_initial_eq = get_dimer_minimum(
+    nh_bond_lengths_initial_eq, nh_e_initial_eq = dimer_minimum(
         nh_bond_lengths_initial, nh_e_initial, n_points=n_points, poly_order=poly_order,
         remove_outliers=remove_outliers, zscore_cutoff=3.0
     )
-    nh_bond_lengths_final_eq, nh_e_final_eq = get_dimer_minimum(
+    nh_bond_lengths_final_eq, nh_e_final_eq = dimer_minimum(
         nh_bond_lengths_final, nh_e_final, n_points=n_points, poly_order=poly_order,
         remove_outliers=remove_outliers, zscore_cutoff=3.0
     )
@@ -388,17 +356,15 @@ def test_n_ea_qc_correctness():
     target_initial_charge = 0
     change_signs = True
     basis_set = 'aug-cc-pV5Z'
-    force_same_method = False
 
     e_chrg0_ground = -54.56266526988731
     e_chrg_neg1_ground = -54.555280878714306
     ea_manual = -(e_chrg_neg1_ground - e_chrg0_ground)
 
-    ea_df = get_qc_change_charge(
+    ea_df = energy_change_charge_qc_atom(
         df_qc_atom, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
-        change_signs=change_signs, basis_set=basis_set,
-        force_same_method=force_same_method
+        change_signs=change_signs, basis_set=basis_set
     )
     assert ea_manual == ea_df
 
@@ -408,9 +374,6 @@ def test_n_ea_qats_correctness():
     target_initial_charge = 0
     change_signs = True
     basis_set = 'aug-cc-pV5Z'
-    bond_length = None
-    lambda_specific_atom = None
-    lambda_direction = None
 
     e_chrg0_ground_cref = -54.54267918907082  # c.chrg-1.mult4; lambda = 1
     e_chrg_neg1_ground_cref = -54.53648723162306  # c.chrg-2.mult3; lambda = 1
@@ -427,12 +390,10 @@ def test_n_ea_qats_correctness():
     
     # Alchemical predictions
     use_ts = False
-    ea_qats = get_qa_change_charge(
-        df_qc_atom, df_qats_atom, target_label, delta_charge, bond_length=bond_length,
+    ea_qats = energy_change_charge_qa_atom(
+        df_qc_atom, df_qats_atom, target_label, delta_charge,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
-        basis_set=basis_set, use_ts=use_ts,
-        lambda_specific_atom=lambda_specific_atom,
-        lambda_direction=lambda_direction
+        basis_set=basis_set, use_ts=use_ts
     )
 
     ea_qats_keys = [i for i in ea_qats.keys()]
@@ -452,23 +413,21 @@ def test_n_ea_qats_correctness():
     poly_coef_chrg1_ground_fref = np.array([-99.06063033329923, -25.77866047114199, -1.7558912191617537, 0.004650575628299217, 0.0008996655272615802])  # f.chrg1.mult3; lambda = -2
     ea_qats_manual = {
         'c': np.array(
-            [-(calc_qats_pred(poly_coef_chrg1_ground_cref, i, 1)[0] - calc_qats_pred(poly_coef_chrg0_ground_cref, i, 1)[0]) for i in range(0, 4+1)]
+            [-(qats_prediction(poly_coef_chrg1_ground_cref, i, 1)[0] - qats_prediction(poly_coef_chrg0_ground_cref, i, 1)[0]) for i in range(0, 4+1)]
         ),
         'o': np.array(
-            [-(calc_qats_pred(poly_coef_chrg1_ground_oref, i, -1)[0] - calc_qats_pred(poly_coef_chrg0_ground_oref, i, -1)[0]) for i in range(0, 4+1)]
+            [-(qats_prediction(poly_coef_chrg1_ground_oref, i, -1)[0] - qats_prediction(poly_coef_chrg0_ground_oref, i, -1)[0]) for i in range(0, 4+1)]
         ),
         'f': np.array(
-            [-(calc_qats_pred(poly_coef_chrg1_ground_fref, i, -2)[0] - calc_qats_pred(poly_coef_chrg0_ground_fref, i, -2)[0]) for i in range(0, 4+1)]
+            [-(qats_prediction(poly_coef_chrg1_ground_fref, i, -2)[0] - qats_prediction(poly_coef_chrg0_ground_fref, i, -2)[0]) for i in range(0, 4+1)]
         ),
     }
 
     use_ts = True
-    ea_qats = get_qa_change_charge(
-        df_qc_atom, df_qats_atom, target_label, delta_charge, bond_length=bond_length,
+    ea_qats = energy_change_charge_qa_atom(
+        df_qc_atom, df_qats_atom, target_label, delta_charge,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
-        basis_set=basis_set, use_ts=use_ts,
-        lambda_specific_atom=lambda_specific_atom,
-        lambda_direction=lambda_direction
+        basis_set=basis_set, use_ts=use_ts
     )
     ie1_qats_keys = [i for i in ea_qats.keys()]
     ie1_qats_keys.sort()
@@ -523,7 +482,7 @@ def test_oh_from_ne_from_qc():
         -75.62038369356912, -75.60324660673356, -75.58851756031235,
         -75.57635994999121, -75.47142171254076
     ])
-    _, neh_energies = get_dimer_curve(
+    _, neh_energies = dimer_curve(
         df_ref_neh, lambda_value=-2
     )
     assert np.allclose(neh_energies, neh_energies_manual)
@@ -635,9 +594,9 @@ def test_ch_bond_lengths_alchemy():
     target_atomic_numbers = df_qc_system.iloc[0]['atomic_numbers']
 
 
-    qc_system_bl, qc_system_e = get_dimer_curve(df_qc_system, lambda_value=0)
+    qc_system_bl, qc_system_e = dimer_curve(df_qc_system, lambda_value=0)
 
-    qc_eq_bl, qc_eq_e = get_dimer_minimum(
+    qc_eq_bl, qc_eq_e = dimer_minimum(
         qc_system_bl,qc_system_e, n_points=n_points, poly_order=poly_order,
     )
 
@@ -668,14 +627,14 @@ def test_ch_bond_lengths_alchemy():
         )
         pred_lambda_values[i] = round(ref_lambda_value)
         if use_ts:
-            pred_system_bl[i], pred_system_e[i] = get_dimer_curve(
+            pred_system_bl[i], pred_system_e[i] = dimer_curve(
                 df_ref_sys, lambda_value=ref_lambda_value, use_ts=use_ts, qats_order=qats_order
             )
         else:
-            pred_system_bl[i], pred_system_e[i] = get_dimer_curve(
+            pred_system_bl[i], pred_system_e[i] = dimer_curve(
                 df_ref_sys, lambda_value=ref_lambda_value, use_ts=use_ts
             )
-        pred_eq_bond_lengths[i], pred_eq_energies[i] = get_dimer_minimum(
+        pred_eq_bond_lengths[i], pred_eq_energies[i] = dimer_minimum(
             pred_system_bl[i], pred_system_e[i], n_points=n_points, poly_order=poly_order,
         )
 
@@ -761,16 +720,16 @@ def test_n_ee_qats_correctness():
     poly_coef_excited_fref = np.array([ -97.61229899821406, -24.83193069401466, -1.6268626619364568, 0.0034881869244903396, 0.0011946591863913152 ])  # f.chrg2.mult2; lambda = -2
     ea_qats_manual = {
         'b': np.array(
-            [calc_qats_pred(poly_coef_excited_bref, i, 2)[0] - calc_qats_pred(poly_coef_ground_bref, i, 2)[0] for i in range(0, 4+1)]
+            [qats_prediction(poly_coef_excited_bref, i, 2)[0] - qats_prediction(poly_coef_ground_bref, i, 2)[0] for i in range(0, 4+1)]
         ),
         'c': np.array(
-            [calc_qats_pred(poly_coef_excited_cref, i, 1)[0] - calc_qats_pred(poly_coef_ground_cref, i, 1)[0] for i in range(0, 4+1)]
+            [qats_prediction(poly_coef_excited_cref, i, 1)[0] - qats_prediction(poly_coef_ground_cref, i, 1)[0] for i in range(0, 4+1)]
         ),
         'o': np.array(
-            [calc_qats_pred(poly_coef_excited_oref, i, -1)[0] - calc_qats_pred(poly_coef_ground_oref, i, -1)[0] for i in range(0, 4+1)]
+            [qats_prediction(poly_coef_excited_oref, i, -1)[0] - qats_prediction(poly_coef_ground_oref, i, -1)[0] for i in range(0, 4+1)]
         ),
         'f': np.array(
-            [calc_qats_pred(poly_coef_excited_fref, i, -2)[0] - calc_qats_pred(poly_coef_ground_fref, i, -2)[0] for i in range(0, 4+1)]
+            [qats_prediction(poly_coef_excited_fref, i, -2)[0] - qats_prediction(poly_coef_ground_fref, i, -2)[0] for i in range(0, 4+1)]
         ),
     }
 
