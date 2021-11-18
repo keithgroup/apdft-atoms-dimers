@@ -31,17 +31,17 @@ from apdft_tools.analysis import *
 json_path_atoms = './json-data/atom-pyscf.apdft-data.posthf.json'
 json_path_dimers = './json-data/dimer-pyscf.apdft-data.posthf.json'
 
-df_qc_atom, df_apdft_atom = prepare_dfs(
+df_qc_atom, df_qats_atom = prepare_dfs(
     json_path_atoms, get_CBS=False, only_converged=False
 )
-df_qc_dimer, df_apdft_dimer = prepare_dfs(
+df_qc_dimer, df_qats_dimer = prepare_dfs(
     json_path_dimers, get_CBS=False, only_converged=False
 )
 
 @pytest.mark.cbs
 def prepare_cbs_atom():
     global df_qc_atom_cbs
-    global df_apdft_atom_cbs
+    global df_qats_atom_cbs
     df_qc_atom_cbs = get_qc_df_cbs(
         df_qc_atom, cbs_basis_key='aug', basis_set_lower='aug-cc-pVTZ',
         basis_set_higher='aug-cc-pVQZ'

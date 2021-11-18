@@ -139,8 +139,8 @@ def get_alchemical_errors(
 
     return [calc_labels[i] for i in sort_z], sys_energies
 
-def get_apdft_errors(
-    df_qc, df_apdft, n_electrons, apdft_order=2, excitation_level=0,
+def get_qats_errors(
+    df_qc, df_qats, n_electrons, qa_order=2, excitation_level=0,
     basis_set='aug-cc-pV5Z', return_energies=False,
     specific_atom=None, direction=None):
     """
@@ -149,7 +149,7 @@ def get_apdft_errors(
     
     Parameters
     ----------
-    apdft_order : :obj:`int`, optional
+    qa_order : :obj:`int`, optional
         Desired order of APDFT to use. Defaults to ``2``.
     return_energies : :obj:`bool`, optional
         Return APDFT energies instead of errors.
@@ -188,35 +188,35 @@ def get_apdft_errors(
     calc_labels = []
     lambda_values = []
     alchemical_energies = []
-    apdft_energies = []
+    qats_energies = []
 
     # Goes through all possible reference systems and calculates APDFTn predictions
     # then computes the alchemical predictions and errors.
     # Loops through all systems.
     for i in range(len(sys_labels)):
         sys_alchemical_energies = []
-        sys_apdft_energies = []
+        sys_qats_energies = []
 
         target_label = sys_labels[i]
         target_atomic_numbers = sys_atomic_numbers[i]
         target_charge = sys_charges[i]
         calc_labels.append(f'{target_label}.chrg{target_charge}.mult{state_mult}')
 
-        df_apdft_ref = get_apdft_refs(
-            df_qc, df_apdft, target_label, n_electrons, basis_set=basis_set,
+        df_qats_ref = get_qa_refs(
+            df_qc, df_qats, target_label, n_electrons, basis_set=basis_set,
             df_selection='apdft', excitation_level=excitation_level, specific_atom=specific_atom,
             direction=direction, considered_lambdas=None
         )
         
-        charge_sort = np.argsort(df_apdft_ref['charge'].values)  # most negative to most positive
+        charge_sort = np.argsort(df_qats_ref['charge'].values)  # most negative to most positive
 
         # Loops through all APDFT references.
         for j in charge_sort:
-            apdft_row = df_apdft_ref.iloc[j]
-            ref_sys_label = apdft_row['system']
-            ref_atomic_numbers = apdft_row['atomic_numbers']
-            ref_charge = apdft_row['charge']
-            ref_poly_coeffs = apdft_row['poly_coeff']
+            qats_row = df_qats_ref.iloc[j]
+            ref_sys_label = qats_row['system']
+            ref_atomic_numbers = qats_row['atomic_numbers']
+            ref_charge = qats_row['charge']
+            ref_poly_coeffs = qats_row['poly_coeff']
 
             lambda_value = get_lambda_value(
                 ref_atomic_numbers, target_atomic_numbers, specific_atom=specific_atom,
@@ -233,22 +233,22 @@ def get_apdft_errors(
             )
 
             # APDFT prediction
-            sys_apdft_energies.append(
-                calc_apdft_pred(
-                    ref_poly_coeffs, apdft_order, lambda_value
+            sys_qats_energies.append(
+                calc_qats_pred(
+                    ref_poly_coeffs, qa_order, lambda_value
                 )[0]
             )
         
         # Adds in alchemical energy and APDFT reference
         sys_alchemical_energies.insert(i, np.nan)
-        sys_apdft_energies.insert(i, np.nan)
+        sys_qats_energies.insert(i, np.nan)
 
         alchemical_energies.append(sys_alchemical_energies)
-        apdft_energies.append(sys_apdft_energies)
+        qats_energies.append(sys_qats_energies)
     alchemical_energies = np.array(alchemical_energies)
-    apdft_energies = np.array(apdft_energies)
+    qats_energies = np.array(qats_energies)
 
-    e_return = apdft_energies
+    e_return = qats_energies
     if not return_energies:
         e_return -= alchemical_energies
     
@@ -290,10 +290,10 @@ def get_qc_binding_curve(
     
     return np.array(bond_lengths), np.array(energies)
 
-def apdft_error_change_charge(
-    df_qc, df_apdft, target_label, delta_charge, change_signs=False,
-    basis_set='aug-cc-pVQZ', target_initial_charge=0, use_fin_diff=True,
-    max_apdft_order=4, ignore_one_row=False,
+def qats_error_change_charge(
+    df_qc, df_qats, target_label, delta_charge, change_signs=False,
+    basis_set='aug-cc-pVQZ', target_initial_charge=0, use_qats=True,
+    max_qa_order=4, ignore_one_row=False,
     considered_lambdas=None, compute_difference=False
 ):
     """Computes APDFT errors in change the charge of a system.
@@ -305,38 +305,38 @@ def apdft_error_change_charge(
             change_signs=change_signs, basis_set=basis_set
         )
     )
-    apdft_predictions = get_apdft_change_charge(
-        df_qc, df_apdft, target_label, delta_charge,
+    qats_predictions = get_qats_change_charge(
+        df_qc, df_qats, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
-        use_fin_diff=use_fin_diff, ignore_one_row=ignore_one_row, 
+        use_qats=use_qats, ignore_one_row=ignore_one_row, 
         considered_lambdas=considered_lambdas,
         compute_difference=compute_difference
     )
     
-    apdft_predictions = {
-        key:hartree_to_ev(value) for (key,value) in apdft_predictions.items()
+    qats_predictions = {
+        key:hartree_to_ev(value) for (key,value) in qats_predictions.items()
     }  # Converts to eV
-    if use_fin_diff or compute_difference:
-        apdft_predictions = pd.DataFrame(
-            apdft_predictions,
-            index=[f'APDFT{i}' for i in range(max_apdft_order+1)]
+    if use_qats or compute_difference:
+        qats_predictions = pd.DataFrame(
+            qats_predictions,
+            index=[f'APDFT{i}' for i in range(max_qa_order+1)]
         )
     else:
-        apdft_predictions = pd.DataFrame(
-            apdft_predictions, index=['APDFT']
+        qats_predictions = pd.DataFrame(
+            qats_predictions, index=['APDFT']
         )
     if compute_difference:
-        return apdft_predictions
+        return qats_predictions
     else:
-        apdft_errors = apdft_predictions.transform(lambda x: x - qc_prediction)
-        return apdft_errors
+        qats_errors = qats_predictions.transform(lambda x: x - qc_prediction)
+        return qats_errors
 
-def apdft_error_change_charge_dimer(
-    df_qc, df_apdft, target_label, delta_charge, change_signs=False,
-    basis_set='cc-pV5Z', target_initial_charge=0, use_fin_diff=True,
+def qats_error_change_charge_dimer(
+    df_qc, df_qats, target_label, delta_charge, change_signs=False,
+    basis_set='cc-pV5Z', target_initial_charge=0, use_qats=True,
     lambda_specific_atom=None, lambda_direction=None,
-    max_apdft_order=4, ignore_one_row=False,
+    max_qa_order=4, ignore_one_row=False,
     considered_lambdas=None, compute_difference=False,
     n_points=2, poly_order=4, remove_outliers=False,
     zscore_cutoff=3.0):
@@ -352,38 +352,38 @@ def apdft_error_change_charge_dimer(
             zscore_cutoff=zscore_cutoff
         )
     )
-    apdft_predictions = get_apdft_change_charge_dimer(
-        df_qc, df_apdft, target_label, delta_charge,
+    qats_predictions = get_qats_change_charge_dimer(
+        df_qc, df_qats, target_label, delta_charge,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
-        basis_set=basis_set, use_fin_diff=use_fin_diff,
+        basis_set=basis_set, use_qats=use_qats,
         lambda_specific_atom=lambda_specific_atom, lambda_direction=lambda_direction,
         ignore_one_row=ignore_one_row, poly_order=poly_order, n_points=n_points,
         remove_outliers=remove_outliers, considered_lambdas=considered_lambdas,
         compute_difference=compute_difference
     )
     
-    apdft_predictions = {
-        key:hartree_to_ev(value) for (key,value) in apdft_predictions.items()
+    qats_predictions = {
+        key:hartree_to_ev(value) for (key,value) in qats_predictions.items()
     }  # Converts to eV
-    if use_fin_diff or compute_difference:
-        apdft_predictions = pd.DataFrame(
-            apdft_predictions,
-            index=[f'APDFT{i}' for i in range(max_apdft_order+1)]
+    if use_qats or compute_difference:
+        qats_predictions = pd.DataFrame(
+            qats_predictions,
+            index=[f'APDFT{i}' for i in range(max_qa_order+1)]
         )
     else:
-        apdft_predictions = pd.DataFrame(
-            apdft_predictions, index=['APDFT']
+        qats_predictions = pd.DataFrame(
+            qats_predictions, index=['APDFT']
         )
     if compute_difference:
-        return apdft_predictions
+        return qats_predictions
     else:
-        apdft_errors = apdft_predictions.transform(lambda x: x - qc_prediction)
-        return apdft_errors
+        qats_errors = qats_predictions.transform(lambda x: x - qc_prediction)
+        return qats_errors
 
-def apdft_error_excitation_energy(
-    df_qc, df_apdft, target_label, target_charge=0, excitation_level=1,
-    basis_set='aug-cc-pVQZ', use_fin_diff=True,
-    max_apdft_order=4, ignore_one_row=False,
+def qats_error_excitation_energy(
+    df_qc, df_qats, target_label, target_charge=0, excitation_level=1,
+    basis_set='aug-cc-pVQZ', use_qats=True,
+    max_qa_order=4, ignore_one_row=False,
     considered_lambdas=None, compute_difference=False
 ):
     """Computes APDFT errors in system excitation energies.
@@ -399,28 +399,28 @@ def apdft_error_excitation_energy(
             ignore_one_row=ignore_one_row
         )
     )
-    apdft_predictions = get_apdft_excitation(
-        df_qc, df_apdft, target_label, target_charge=target_charge,
+    qats_predictions = get_qats_excitation(
+        df_qc, df_qats, target_label, target_charge=target_charge,
         excitation_level=excitation_level, basis_set=basis_set,
-        use_fin_diff=use_fin_diff, ignore_one_row=ignore_one_row,
+        use_qats=use_qats, ignore_one_row=ignore_one_row,
         considered_lambdas=considered_lambdas,
         compute_difference=compute_difference
     )
     
-    apdft_predictions = {key:hartree_to_ev(value) for (key,value) in apdft_predictions.items()}  # Converts to eV
-    if use_fin_diff:
-        apdft_predictions = pd.DataFrame(
-            apdft_predictions, index=[f'APDFT{i}' for i in range(max_apdft_order+1)]
+    qats_predictions = {key:hartree_to_ev(value) for (key,value) in qats_predictions.items()}  # Converts to eV
+    if use_qats:
+        qats_predictions = pd.DataFrame(
+            qats_predictions, index=[f'APDFT{i}' for i in range(max_qa_order+1)]
         )  # Makes dataframe
     else:
-        apdft_predictions = pd.DataFrame(
-            apdft_predictions, index=['APDFT']
+        qats_predictions = pd.DataFrame(
+            qats_predictions, index=['APDFT']
         )  # Makes dataframe
 
     if compute_difference:
-        return apdft_predictions
+        return qats_predictions
     else:
-        apdft_errors = apdft_predictions.transform(lambda x: x - qc_prediction)
-        return apdft_errors
+        qats_errors = qats_predictions.transform(lambda x: x - qc_prediction)
+        return qats_errors
 
 

@@ -236,8 +236,8 @@ def get_lambda_value(
             f'Only one or two atoms are supported. There are {len(ref_atomic_numbers)} in this system.'
         )
 
-def get_apdft_refs(
-    df_qc, df_apdft, target_label, target_n_electrons, basis_set='aug-cc-pV5Z',
+def get_qa_refs(
+    df_qc, df_qats, target_label, target_n_electrons, basis_set='aug-cc-pV5Z',
     df_selection='apdft', excitation_level=None, specific_atom=None,
     direction=None, considered_lambdas=None):
     """Returns dataframe with all possible APDFT references for a given target system.
@@ -246,7 +246,7 @@ def get_apdft_refs(
     ----------
     df_qc : :obj:`pandas.DataFrame`
         A dataframe with quantum chemistry data.
-    df_apdft : :obj:`pandas.DataFrame`
+    df_qats : :obj:`pandas.DataFrame`
         A dataframe with APDFT data.
     target_label : :obj:`str`
         Atoms in the system. For example, ``'c'``, ``'si'``, or ``'f.h'``.
@@ -289,9 +289,9 @@ def get_apdft_refs(
         to predict the desired target.
     """
     if df_selection == 'apdft':
-        if 'electronic_energy' not in df_apdft.columns.values:
-            df_apdft = add_energies_to_df_apdft(df_qc, df_apdft)
-        df_ref = df_apdft.query(
+        if 'electronic_energy' not in df_qats.columns.values:
+            df_qats = add_energies_to_df_qats(df_qc, df_qats)
+        df_ref = df_qats.query(
             'system != @target_label'
             '& n_electrons == @target_n_electrons'
             '& basis_set == @basis_set'
@@ -420,7 +420,7 @@ def unify_qc_energies(df1, df2):
             raise ValueError(f'Methods {methods} are not compatible.')
     return energies
 
-def add_energies_to_df_apdft(df_qc, df_apdft):
+def add_energies_to_df_qats(df_qc, df_qats):
     """Adds electronic energy data to the APDFT dataframe.
 
     Information is used to select states out of the APDFT dataframe.
@@ -429,7 +429,7 @@ def add_energies_to_df_apdft(df_qc, df_apdft):
     ----------
     df_qc : :obj:`pandas.dataframe`
         The quantum chemistry dataframe.
-    df_apdft : :obj:`pandas.dataframe`
+    df_qats : :obj:`pandas.dataframe`
         The APDFT dataframe.
     
     Returns
@@ -450,13 +450,13 @@ def add_energies_to_df_apdft(df_qc, df_apdft):
     if 'bond_length' in df_qc.columns.values:
         qc_columns.insert(5, 'bond_length')
         shared_columns.append('bond_length')
-    df_apdft = pd.merge(
-        df_apdft,
+    df_qats = pd.merge(
+        df_qats,
         df_qc[qc_columns],
         how='inner',
         on=shared_columns,
     )
-    return df_apdft
+    return df_qats
 
 def select_state(df, excitation_level, ignore_one_row=False):
     """Filters dataframes to only contain the desired excitation level.

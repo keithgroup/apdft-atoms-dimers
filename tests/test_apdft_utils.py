@@ -33,10 +33,10 @@ json_path_not_converged_atom = './tests/tests_data/c.chrg-2.mult3-pyscf-uccsdt.a
 json_path_converged_dimer = './tests/tests_data/c.h.chrg0.mult2.sep1.10-pyscf-uccsdt.ccpv5z.json'
 json_path_dimers = './json-data/dimer-pyscf.apdft-data.posthf.json'
 
-df_qc_atom, df_apdft_atom = prepare_dfs(
+df_qc_atom, df_qats_atom = prepare_dfs(
     json_path_atoms, get_CBS=False, only_converged=False
 )
-df_qc_dimer, df_apdft_dimer = prepare_dfs(
+df_qc_dimer, df_qats_dimer = prepare_dfs(
     json_path_dimers, get_CBS=False, only_converged=False
 )
 
@@ -55,20 +55,20 @@ def test_get_lambda_values_atoms():
     )
     assert l_value == -0.658
 
-def test_add_energies_to_apdft_atoms_7elec():
+def test_add_energies_to_qats_atoms_7elec():
     # Reducing the size of the dataframes.
     df_qc_sys = df_qc_atom.query('n_electrons == 7')
-    df_apdft_sys = df_apdft_atom.query('n_electrons == 7')
+    df_qats_sys = df_qats_atom.query('n_electrons == 7')
     
-    df_apdft_refs = add_energies_to_df_apdft(
-        df_qc_sys, df_apdft_sys
+    df_qats_refs = add_energies_to_df_qats(
+        df_qc_sys, df_qats_sys
     )
-    assert len(df_apdft_refs) == 30
-    systems = list(set(df_apdft_refs['system'].values))
+    assert len(df_qats_refs) == 30
+    systems = list(set(df_qats_refs['system'].values))
     systems.sort()
     assert systems == ['b', 'c', 'f', 'n', 'o']
-    for i in range(len(df_apdft_refs)):
-        row = df_apdft_refs.iloc[i]
+    for i in range(len(df_qats_refs)):
+        row = df_qats_refs.iloc[i]
         assert np.allclose(
             np.array([row['electronic_energy']]),
             np.array(row['poly_coeff'])[0]

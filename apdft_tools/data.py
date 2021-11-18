@@ -408,7 +408,7 @@ def get_qc_df_cbs(
     df_cbs = df_qc.append(df_cbs_prelim)
     return df_cbs
 
-def get_apdft_dframe(json_dict):
+def get_qats_dframe(json_dict):
     """Prepares a Pandas dataframe of APDFT-relevant data.
 
     Parameters
@@ -447,9 +447,9 @@ def get_apdft_dframe(json_dict):
                 
     return pd.DataFrame(prelim_df)
 
-def get_apdft_df_cbs(
-    df_qc, df_apdft, cbs_basis_key='aug', basis_set_higher='aug-cc-pVQZ',
-    max_apdft_order=4, finite_diff_delta=0.01,
+def get_qats_df_cbs(
+    df_qc, df_qats, cbs_basis_key='aug', basis_set_higher='aug-cc-pVQZ',
+    max_qa_order=4, finite_diff_delta=0.01,
     finite_diff_acc=2,
 ):
     """Adds APDFT rows from CBS extrapolated data to a dataframe.
@@ -458,14 +458,14 @@ def get_apdft_df_cbs(
     ----------
     df_qc : :obj:`pandas.DataFrame`
         A dataframe with quantum chemistry data.
-    df_apdft : :obj:`pandas.DataFrame`
+    df_qats : :obj:`pandas.DataFrame`
         A dataframe with APDFT data.
     cbs_basis_key : :obj:`str`, optional
         Which basis set family to extrapolate. Must be keys of the extrapolation
         dictionaries.
     basis_set_higher : :obj:`str`, optional
         The larger basis set (with a higher cardinal number).
-    max_apdft_order : :obj:`int`, optional
+    max_qa_order : :obj:`int`, optional
         The maximum APDFT order desired. Defaults to four.
     finite_diff_delta : :obj:`float`
         The deviation from x0 for each point.
@@ -479,7 +479,7 @@ def get_apdft_df_cbs(
         APDFT dataframe with added CBS extrapolated data.
     """
     stencils = [{'coefficients': np.array([1]), "offsets": np.array([0])}]  # 0th order approximation.
-    for order in range(1, max_apdft_order+1):
+    for order in range(1, max_qa_order+1):
         stencils.append(
             findiff.coefficients(
                 deriv=order, acc=finite_diff_acc
@@ -489,26 +489,26 @@ def get_apdft_df_cbs(
     positions = list(set().union(*[set(_["offsets"]) for _ in stencils]))
     required_lambdas = [_*finite_diff_delta for _ in positions]
 
-    df_qc_for_apdft_cbs = df_qc[
+    df_qc_for_qats_cbs = df_qc[
         (df_qc.basis_set == f'CBS-{cbs_basis_key}')
         & (df_qc['lambda_value'].isin(required_lambdas))
         & (df_qc.qc_method.transform(lambda x: x.lower()).isin(post_hf_methods))
     ]
-    df_apdft_for_cbs = df_apdft[
-        (df_apdft.basis_set == basis_set_higher)
-        & (df_apdft.qc_method.transform(lambda x: x.lower()).isin(post_hf_methods))
+    df_qats_for_cbs = df_qats[
+        (df_qats.basis_set == basis_set_higher)
+        & (df_qats.qc_method.transform(lambda x: x.lower()).isin(post_hf_methods))
     ]
 
     df_cbs_prelim = []
     for row_info in zip(
-        df_apdft_for_cbs['system'], df_apdft_for_cbs['charge'],
-        df_apdft_for_cbs['multiplicity'],
-        df_apdft_for_cbs['qc_method'], df_apdft_for_cbs['lambda_range'],
+        df_qats_for_cbs['system'], df_qats_for_cbs['charge'],
+        df_qats_for_cbs['multiplicity'],
+        df_qats_for_cbs['qc_method'], df_qats_for_cbs['lambda_range'],
     ):
         system, charge, multiplicity, qc_method, lambda_range = row_info
 
         # Gets energies for finite difference.
-        df_findiff = df_qc_for_apdft_cbs.query(
+        df_findiff = df_qc_for_qats_cbs.query(
             'system == @system' \
             '& charge == @charge' \
             '& multiplicity == @multiplicity' \
@@ -540,8 +540,8 @@ def get_apdft_df_cbs(
             contribution /= np.math.factorial(order)
             poly_coeffs.append(contribution)
         
-        # Gets df_apdft row template.
-        df_apdft_template = df_apdft_for_cbs.query(
+        # Gets df_qats row template.
+        df_qats_template = df_qats_for_cbs.query(
             'system == @system' \
             '& charge == @charge' \
             '& multiplicity == @multiplicity' \
@@ -549,14 +549,14 @@ def get_apdft_df_cbs(
         ).iloc[0].to_dict()
         
         # Makes changes to CBS.
-        df_apdft_template['basis_set'] = f'CBS-{cbs_basis_key}'
-        df_apdft_template['finite_diff_delta'] = finite_diff_delta
-        df_apdft_template['finite_diff_acc'] = finite_diff_acc
-        df_apdft_template['poly_coeff'] = np.array(poly_coeffs)
-        df_cbs_prelim.append(df_apdft_template)
+        df_qats_template['basis_set'] = f'CBS-{cbs_basis_key}'
+        df_qats_template['finite_diff_delta'] = finite_diff_delta
+        df_qats_template['finite_diff_acc'] = finite_diff_acc
+        df_qats_template['poly_coeff'] = np.array(poly_coeffs)
+        df_cbs_prelim.append(df_qats_template)
     
     df_cbs_prelim = pd.DataFrame(df_cbs_prelim)
-    df_cbs = df_apdft.append(df_cbs_prelim)
+    df_cbs = df_qats.append(df_cbs_prelim)
     return df_cbs
 
 def prepare_dfs(json_path, get_CBS=False, only_converged=False):
@@ -578,14 +578,14 @@ def prepare_dfs(json_path, get_CBS=False, only_converged=False):
     """
     data_dict = read_json(json_path)
     df_qc = get_qc_dframe(data_dict, only_converged=only_converged)
-    df_apdft = get_apdft_dframe(data_dict)
+    df_qats = get_qats_dframe(data_dict)
     if get_CBS:
         df_qc = get_qc_df_cbs(
             df_qc, cbs_basis_key='aug', basis_set_lower='aug-cc-pVTZ',
             basis_set_higher='aug-cc-pVQZ'
         )
-        df_apdft = get_apdft_df_cbs(
-            df_qc, df_apdft, cbs_basis_key='aug',
+        df_qats = get_qats_df_cbs(
+            df_qc, df_qats, cbs_basis_key='aug',
             basis_set_higher='aug-cc-pVQZ'
         )
-    return df_qc, df_apdft
+    return df_qc, df_qats

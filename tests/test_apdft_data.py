@@ -40,7 +40,7 @@ df_qc = get_qc_dframe(read_json(json_path_atoms), only_converged=False)
 @pytest.mark.cbs
 def test_prepare_atom_cbs_reduced():
     global df_qc_atom_cbs
-    global df_apdft_atom_cbs
+    global df_qats_atom_cbs
     df_qc_nco = df_qc[df_qc.system.isin(['c', 'n', 'o'])]
     num_5z = len(df_qc_nco.query('basis_set == "aug-cc-pV5Z"'))
     num_tz = len(df_qc_nco.query('basis_set == "aug-cc-pVTZ"'))
