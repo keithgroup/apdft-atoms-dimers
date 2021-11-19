@@ -35,7 +35,7 @@ json_path_converged_dimer = './tests/tests_data/c.h.chrg0.mult2.sep1.10-pyscf-uc
 json_path_not_converged_dimer = './tests/tests_data/b.h.chrg-1.mult2.sep1.60-pyscf-uccsdt.ccpv5z.json'
 
 
-df_qc = get_qc_dframe(read_json(json_path_atoms), only_converged=False)
+df_qc = qc_dframe(read_json(json_path_atoms), only_converged=False)
 
 @pytest.mark.cbs
 def test_prepare_atom_cbs_reduced():
@@ -45,7 +45,7 @@ def test_prepare_atom_cbs_reduced():
     num_5z = len(df_qc_nco.query('basis_set == "aug-cc-pV5Z"'))
     num_tz = len(df_qc_nco.query('basis_set == "aug-cc-pVTZ"'))
     correct_total_size = 3*num_tz + num_5z
-    df_qc_atom_cbs = get_qc_df_cbs(
+    df_qc_atom_cbs = add_cbs_extrap_qc_df(
         df_qc_nco, cbs_basis_key='aug', basis_set_lower='aug-cc-pVTZ',
         basis_set_higher='aug-cc-pVQZ'
     )

@@ -25,32 +25,46 @@ import numpy as np
 from qa_tools.utils import *
 from qa_tools.prediction import *
 
-def get_alchemical_errors(
-    df_qc, n_electrons, excitation_level=0,
-    basis_set='aug-cc-pVQZ', bond_length=None, return_energies=False,
-    energy_type='total'):
-    """
+def qa_pes_errors(
+    df_qc, n_electrons, excitation_level=0, basis_set='aug-cc-pV5Z',
+    bond_length=None, return_energies=False, energy_type='total'):
+    """Computes the error associated with predicting a system's absolute
+    electronic energy using quantum alchemy.
+
+    In other words, this quantifies the error when using a quantum alchemy
+    reference and nuclear charge perturbation to model a target. For example,
+    how accurate is using C- basis set with a lambda of 1 to predict N.
     
     Parameters
     ----------
+    df_qc : :obj:`pandas.DataFrame`
+        Quantum chemistry dataframe.
+    n_electrons : :obj:`int`
+        Total number of electrons for the quantum alchemical PES.
+    excitation_level : :obj:`int`, optional
+        Electronic state of the system with respect to the ground state. ``0``
+        represents the ground state, ``1`` the first excited state, etc.
+        Defaults to ground state.
+    basis_set : :obj:`str`, optional
+        Specifies the basis set to use for predictions. Defaults to
+        ``'aug-cc-pV5Z'``.
     bond_length : :obj:`float`, optional
-
+        Desired bond length for dimers; must be specified.
     return_energies : :obj:`bool`, optional
-        Return QATS energies instead of errors.
+        Return quantum alchemy energies instead of errors. Defaults to ``False``.
     energy_type : :obj:`str`, optional
         Species the energy type/contributions to examine. Can be ``'total'``
         energies, ``'hf'`` for Hartree-Fock contributions, or ``'correlation'``
-        energies.
+        energies. Defaults to ``'total'``.
     
     Returns
     -------
     :obj:`list` [:obj:`str`]
         System and state labels (e.g., `'c.chrg0.mult1'`) in the order of
-        increasing atomic number.
+        increasing atomic number (and charge).
     :obj:`numpy.ndarray`
-        Alchemical energy errors due to modeling a target system by changing
-        the nuclear charge of a reference system (e.g., c -> n). The rows and
-        columns are in the same order as the state labels.
+        Quantum alchemy errors (or energies) with respect to standard quantum
+        chemistry.
     """
     if energy_type == 'total':
         df_energy_type = 'electronic_energy'
@@ -59,8 +73,11 @@ def get_alchemical_errors(
     elif energy_type == 'correlation':
         df_energy_type = 'correlation_energy'
 
-    df_alch_pes = df_qc[(df_qc.n_electrons == n_electrons) & (df_qc.basis_set == basis_set)]
-    sys_labels = list(set(df_alch_pes.system.values))
+    df_qa_pes = df_qc.query(
+        'n_electrons == @n_electrons'
+        '& basis_set == @basis_set'
+    )
+    sys_labels = list(set(df_qa_pes['system'].values))
 
     if len(df_qc.iloc[0]['atomic_numbers']) == 2:
         is_dimer = True
@@ -75,14 +92,14 @@ def get_alchemical_errors(
     energies = []
     true_energies = []
     for sys_label in sys_labels:
-        df_sys = df_alch_pes.query('system == @sys_label')
+        df_sys = df_qa_pes.query('system == @sys_label')
         if is_dimer:
             assert bond_length is not None
             df_sys = df_sys.query('bond_length == @bond_length')
 
         # Select multiplicity
         df_state = select_state(
-            df_sys[df_sys.lambda_value == 0.0], excitation_level,
+            df_sys.query('lambda_value == 0.0'), excitation_level,
             ignore_one_row=True
         )
         
@@ -139,20 +156,34 @@ def get_alchemical_errors(
 
     return [calc_labels[i] for i in sort_z], sys_energies
 
-def get_qats_errors(
+def qats_pes_errors(
     df_qc, df_qats, n_electrons, qats_order=2, excitation_level=0,
-    basis_set='aug-cc-pV5Z', return_energies=False,
-    specific_atom=None, direction=None):
-    """
+    basis_set='aug-cc-pV5Z', return_energies=False):
+    """Computes the error associated with using a Taylor series to approximate
+    the quantum alchemical potential energy surface.
 
-    Only atoms are supported.
+    Errors are in reference to quantum alchemy. Only atom dataframes are 
+    supported.
     
     Parameters
     ----------
+    df_qc : :obj:`pandas.DataFrame`
+        Quantum chemistry dataframe.
+    df_qats : :obj:`pandas.DataFrame`, optional
+        QATS dataframe.
+    n_electrons : :obj:`int`
+        Total number of electrons for the quantum alchemical PES.
     qats_order : :obj:`int`, optional
-        Desired order of QATS to use. Defaults to ``2``.
+        Desired Taylor series order to use. Defaults to ``2``.
+    excitation_level : :obj:`int`, optional
+        Electronic state of the system with respect to the ground state. ``0``
+        represents the ground state, ``1`` the first excited state, etc.
+        Defaults to ground state.
+    basis_set : :obj:`str`, optional
+        Specifies the basis set to use for predictions. Defaults to
+        ``'aug-cc-pV5Z'``.
     return_energies : :obj:`bool`, optional
-        Return QATS energies instead of errors.
+        Return QATS energies instead of errors. Defaults to ``False``.
     
     Returns
     -------
@@ -164,25 +195,25 @@ def get_qats_errors(
         the nuclear charge of a reference system (e.g., c -> n). The rows and
         columns are in the same order as the state labels.
     """
+    if len(df_qc.iloc[0]['atomic_numbers']) == 2:
+        raise ValueError('Dimers are not supported.')
 
-    df_alch_pes = df_qc.query(
+    df_qa_pes = df_qc.query(
         'n_electrons == @n_electrons & basis_set == @basis_set'
     )
-    mult_sys_test = df_alch_pes.iloc[0]['system']
+    mult_sys_test = df_qa_pes.iloc[0]['system']
     state_mult = get_multiplicity(
-        df_alch_pes.query('system == @mult_sys_test'), excitation_level,
+        df_qa_pes.query('system == @mult_sys_test'), excitation_level,
         ignore_one_row=False
     )
-    df_alch_pes = df_alch_pes.query('multiplicity == @state_mult')
+    df_qa_pes = df_qa_pes.query('multiplicity == @state_mult')
 
-    df_sys_info = df_alch_pes.query('lambda_value == 0.0')
+    df_sys_info = df_qa_pes.query('lambda_value == 0.0')
     charge_sort = np.argsort(df_sys_info['charge'].values)  # most negative to most positive
     sys_labels = df_sys_info['system'].values[charge_sort]
     sys_atomic_numbers = df_sys_info['atomic_numbers'].values[charge_sort]
     sys_charges = df_sys_info['charge'].values[charge_sort]
 
-    if len(df_qc.iloc[0]['atomic_numbers']) == 2:
-        raise ValueError('Dimers are not supported.')
 
     # Gets data.
     calc_labels = []
@@ -204,8 +235,8 @@ def get_qats_errors(
 
         df_qats_ref = get_qa_refs(
             df_qc, df_qats, target_label, n_electrons, basis_set=basis_set,
-            df_selection='qats', excitation_level=excitation_level, specific_atom=specific_atom,
-            direction=direction, considered_lambdas=None
+            df_selection='qats', excitation_level=excitation_level,
+             considered_lambdas=None
         )
         
         charge_sort = np.argsort(df_qats_ref['charge'].values)  # most negative to most positive
@@ -219,8 +250,7 @@ def get_qats_errors(
             ref_poly_coeffs = qats_row['poly_coeffs']
 
             lambda_value = get_lambda_value(
-                ref_atomic_numbers, target_atomic_numbers, specific_atom=specific_atom,
-                direction=direction
+                ref_atomic_numbers, target_atomic_numbers
             )
 
             # Predicted alchemical energy.
@@ -257,47 +287,60 @@ def get_qats_errors(
 
     return calc_labels, e_return
 
-def get_qc_binding_curve(
-    df_qc, sys_label, charge, excitation_level=0, basis_set='aug-cc-pVQZ',
-    lambda_value=0
-):
-    """
+def error_change_charge_qats_atoms(
+    df_qc, df_qats, target_label, delta_charge, change_signs=False,
+    basis_set='aug-cc-pV5Z', target_initial_charge=0, use_ts=True,
+    max_qats_order=4, ignore_one_row=False,
+    considered_lambdas=None, return_qats_vs_qa=False):
+    """Automates the procedure of calculating errors for changing charges on
+    atoms.
+
+    Parameters
+    ----------
+    df_qc : :obj:`pandas.DataFrame`
+        Quantum chemistry dataframe.
+    df_qats : :obj:`pandas.DataFrame`, optional
+        QATS dataframe.
+    target_label : :obj:`str`
+        Atoms in the system. For example, ``'f.h'``.
+    delta_charge : :obj:`str`
+        Overall change in the initial target system.
+    change_signs : :obj:`bool`, optional
+        Multiply all predictions by -1. Used to correct the sign for computing
+        electron affinities. Defaults to ``False``.
+    basis_set : :obj:`str`, optional
+        Specifies the basis set to use for predictions. Defaults to
+        ``'aug-cc-pV5Z'``.
+    target_initial_charge : :obj:`int`
+        Specifies the initial charge state of the target system. For example,
+        the first ionization energy is the energy difference going from
+        charge ``0 -> 1``, so ``target_initial_charge`` must equal ``0``.
+    use_ts : :obj:`bool`, optional
+        Use a Taylor series approximation (with finite differences) to make
+        QATS-n predictions (where n is the order). Defaults to ``True``.
+    max_qats_order : :obj:`int`, optional
+        Maximum order to use for the Taylor series. Defaults to ``4``.
+    ignore_one_row : :obj:`bool`, optional
+        Used to control errors in ``state_selection`` when there is missing
+        data (i.e., just one state). If ``True``, no errors are raised. Defaults
+        to ``True``.
+    considered_lambdas : :obj:`list`, optional
+        Allows specification of lambda values that will be considered. ``None``
+        will allow all lambdas to be valid, ``[1, -1]`` would only report
+        predictions using references using a lambda of ``1`` or ``-1``.
+        Defaults to ``None``.
+    return_qats_vs_qa : :obj:`bool`, optional
+        Return the difference of QATS-n - QA predictions; i.e., the error of
+        using a Taylor series with repsect to quantum alchemy.
+        Defaults to ``False``.
     
     Returns
     -------
-    
+    :obj:`pandas.DataFrame`
     """
-    df_sys = df_qc.query(
-        'system == @sys_label'
-        '& basis_set == @basis_set'
-        '& charge == @charge'
-    )
-    df_state = select_state(
-        df_sys[df_sys.lambda_value == 0.0], excitation_level,
-        ignore_one_row=True
-    )
-    state_mult = df_state.iloc[0]['multiplicity']
-    df_sys = df_sys.query(
-        'multiplicity == @state_mult'
-        '& lambda_value == @lambda_value'
-    )
-    bond_length_idx = np.argsort(df_sys.bond_length.values)
-    bond_lengths = []
-    energies = []
-    for idx in bond_length_idx:
-        bond_lengths.append(df_sys.iloc[idx].bond_length)
-        energies.append(df_sys.iloc[idx].electronic_energy)
+    if len(df_qc.iloc[0]['atomic_numbers']) == 2:
+        raise ValueError('Dimers are not supported.')
     
-    return np.array(bond_lengths), np.array(energies)
-
-def qats_error_change_charge(
-    df_qc, df_qats, target_label, delta_charge, change_signs=False,
-    basis_set='aug-cc-pVQZ', target_initial_charge=0, use_ts=True,
-    max_qats_order=4, ignore_one_row=False,
-    considered_lambdas=None, compute_difference=False
-):
-    """Computes QATS errors in change the charge of a system.
-    """
     qc_prediction = hartree_to_ev(
         energy_change_charge_qc_atom(
             df_qc, target_label, delta_charge,
@@ -311,13 +354,13 @@ def qats_error_change_charge(
         change_signs=change_signs, basis_set=basis_set,
         use_ts=use_ts, ignore_one_row=ignore_one_row, 
         considered_lambdas=considered_lambdas,
-        compute_difference=compute_difference
+        return_qats_vs_qa=return_qats_vs_qa
     )
     
     qats_predictions = {
         key:hartree_to_ev(value) for (key,value) in qats_predictions.items()
     }  # Converts to eV
-    if use_ts or compute_difference:
+    if use_ts or return_qats_vs_qa:
         qats_predictions = pd.DataFrame(
             qats_predictions,
             index=[f'QATS-{i}' for i in range(max_qats_order+1)]
@@ -326,21 +369,87 @@ def qats_error_change_charge(
         qats_predictions = pd.DataFrame(
             qats_predictions, index=['QATS']
         )
-    if compute_difference:
+    if return_qats_vs_qa:
         return qats_predictions
     else:
         qats_errors = qats_predictions.transform(lambda x: x - qc_prediction)
         return qats_errors
 
-def qats_error_change_charge_dimer(
+def error_change_charge_qats_dimer(
     df_qc, df_qats, target_label, delta_charge, change_signs=False,
     basis_set='cc-pV5Z', target_initial_charge=0, use_ts=True,
-    lambda_specific_atom=None, lambda_direction=None,
+    lambda_specific_atom=0, lambda_direction=None,
     max_qats_order=4, ignore_one_row=False,
-    considered_lambdas=None, compute_difference=False,
+    considered_lambdas=None, return_qats_vs_qa=False,
     n_points=2, poly_order=4, remove_outliers=False,
     zscore_cutoff=3.0):
     """Computes QATS errors in change the charge of a system.
+
+    Parameters
+    ----------
+    df_qc : :obj:`pandas.DataFrame`
+        Quantum chemistry dataframe.
+    df_qats : :obj:`pandas.DataFrame`, optional
+        QATS dataframe.
+    target_label : :obj:`str`
+        Atoms in the system. For example, ``'f.h'``.
+    delta_charge : :obj:`str`
+        Overall change in the initial target system.
+    change_signs : :obj:`bool`, optional
+        Multiply all predictions by -1. Used to correct the sign for computing
+        electron affinities. Defaults to ``False``.
+    basis_set : :obj:`str`, optional
+        Specifies the basis set to use for predictions. Defaults to
+        ``'aug-cc-pV5Z'``.
+    target_initial_charge : :obj:`int`
+        Specifies the initial charge state of the target system. For example,
+        the first ionization energy is the energy difference going from
+        charge ``0 -> 1``, so ``target_initial_charge`` must equal ``0``.
+    use_ts : :obj:`bool`, optional
+        Use a Taylor series approximation (with finite differences) to make
+        QATS-n predictions (where n is the order). Defaults to ``True``.
+    lambda_specific_atom : :obj:`int`, optional
+        Applies the entire lambda change to a single atom in dimers. For
+        example, OH -> FH+ would be a lambda change of +1 only on the first
+        atom. Defaults to ``0``.
+    lambda_direction : :obj:`str`, optional
+        Defines the direction of lambda changes for dimers. ``'counter'`` is
+        is where one atom increases and the other decreases their nuclear
+        charge (e.g., CO -> BF).
+        If the atomic numbers of the reference are the same, the first atom's
+        nuclear charge is decreased and the second is increased. IF they are
+        different, the atom with the largest atomic number increases by lambda.
+        Defaults to ``None``.
+    max_qats_order : :obj:`int`, optional
+        Maximum order to use for the Taylor series. Defaults to ``4``.
+    ignore_one_row : :obj:`bool`, optional
+        Used to control errors in ``state_selection`` when there is missing
+        data (i.e., just one state). If ``True``, no errors are raised. Defaults
+        to ``True``.
+    considered_lambdas : :obj:`list`, optional
+        Allows specification of lambda values that will be considered. ``None``
+        will allow all lambdas to be valid, ``[1, -1]`` would only report
+        predictions using references using a lambda of ``1`` or ``-1``.
+        Defaults to ``None``.
+    return_qats_vs_qa : :obj:`bool`, optional
+        Return the difference of QATS-n - QATS predictions; i.e., the error of
+        using a Taylor series approximation with repsect to the alchemical
+        potential energy surface. Defaults to ``False``.
+    n_points : :obj:`int`, optional
+        The number of surrounding points on either side of the minimum bond
+        length. Defaults to ``2``.
+    poly_order : :obj:`int`, optional
+        Maximum order of the fitted polynomial. Defaults to ``2``.
+    remove_outliers : :obj:`bool`, optional
+        Do not include bond lengths that are marked as outliers by their z
+        score. Defaults to ``False``.
+    zscore_cutoff : :obj:`float`, optional
+        Bond length energies that have a z score higher than this are
+        considered outliers. Defaults to ``3.0``.
+    
+    Returns
+    -------
+    :obj:`pandas.DataFrame`
     """
     qc_prediction = hartree_to_ev(
         energy_change_charge_qc_dimer(
@@ -359,13 +468,13 @@ def qats_error_change_charge_dimer(
         lambda_specific_atom=lambda_specific_atom, lambda_direction=lambda_direction,
         ignore_one_row=ignore_one_row, poly_order=poly_order, n_points=n_points,
         remove_outliers=remove_outliers, considered_lambdas=considered_lambdas,
-        compute_difference=compute_difference
+        return_qats_vs_qa=return_qats_vs_qa
     )
     
     qats_predictions = {
         key:hartree_to_ev(value) for (key,value) in qats_predictions.items()
     }  # Converts to eV
-    if use_ts or compute_difference:
+    if use_ts or return_qats_vs_qa:
         qats_predictions = pd.DataFrame(
             qats_predictions,
             index=[f'QATS-{i}' for i in range(max_qats_order+1)]
@@ -374,37 +483,70 @@ def qats_error_change_charge_dimer(
         qats_predictions = pd.DataFrame(
             qats_predictions, index=['QATS']
         )
-    if compute_difference:
+    if return_qats_vs_qa:
         return qats_predictions
     else:
         qats_errors = qats_predictions.transform(lambda x: x - qc_prediction)
         return qats_errors
 
-def qats_error_excitation_energy(
-    df_qc, df_qats, target_label, target_charge=0, excitation_level=1,
-    basis_set='aug-cc-pVQZ', use_ts=True,
+def error_mult_gap_qa_atom(
+    df_qc, df_qats, target_label, target_charge=0,
+    basis_set='aug-cc-pV5Z', use_ts=True,
     max_qats_order=4, ignore_one_row=False,
-    considered_lambdas=None, compute_difference=False
-):
-    """Computes QATS errors in system excitation energies.
+    considered_lambdas=None, return_qats_vs_qa=False):
+    """Computes QATS errors in system multiplicity gaps.
 
+    Parameters
+    ----------
+    df_qc : :obj:`pandas.DataFrame`
+        Quantum chemistry dataframe.
+    df_qats : :obj:`pandas.DataFrame`, optional
+        QATS dataframe.
+    target_label : :obj:`str`
+        Atoms in the system. For example, ``'f.h'``.
+    target_charge : :obj:`int`, optional
+        The system charge. Defaults to ``0``.
+    basis_set : :obj:`str`, optional
+        Specifies the basis set to use for predictions. Defaults to
+        ``'aug-cc-pV5Z'``.
+    use_ts : :obj:`bool`, optional
+        Use a Taylor series approximation to make QATS-n predictions
+        (where n is the order). Defaults to ``True``.
+    max_qats_order : :obj:`int`, optional
+        Maximum order to use for the Taylor series. Defaults to ``4``.
+    ignore_one_row : :obj:`bool`, optional
+        Used to control errors in ``state_selection`` when there is missing
+        data (i.e., just one state). If ``True``, no errors are raised. Defaults
+        to ``False``.
+    considered_lambdas : :obj:`list`, optional
+        Allows specification of lambda values that will be considered. ``None``
+        will allow all lambdas to be valid, ``[1, -1]`` would only report
+        predictions using references using a lambda of ``1`` or ``-1``.
+    return_qats_vs_qa : :obj:`bool`, optional
+        Return the difference of QATS-n - QATS predictions; i.e., the error of
+        using a Taylor series approximation with repsect to the alchemical
+        potential energy surface. Defaults to ``False``.
+    
     Returns
     -------
     :obj:`pandas.DataFrame`
     """
+    if len(df_qc.iloc[0]['atomic_numbers']) == 2:
+        raise ValueError('Dimers are not supported.')
+    
     qc_prediction = hartree_to_ev(
         mult_gap_qc_atom(
             df_qc, target_label, target_charge=target_charge,
-            excitation_level=excitation_level, basis_set=basis_set,
+            excitation_level=1, basis_set=basis_set,
             ignore_one_row=ignore_one_row
         )
     )
     qats_predictions = mult_gap_qa_atom(
         df_qc, df_qats, target_label, target_charge=target_charge,
-        excitation_level=excitation_level, basis_set=basis_set,
+        excitation_level=1, basis_set=basis_set,
         use_ts=use_ts, ignore_one_row=ignore_one_row,
         considered_lambdas=considered_lambdas,
-        compute_difference=compute_difference
+        return_qats_vs_qa=return_qats_vs_qa
     )
     
     qats_predictions = {key:hartree_to_ev(value) for (key,value) in qats_predictions.items()}  # Converts to eV
@@ -417,7 +559,7 @@ def qats_error_excitation_energy(
             qats_predictions, index=['QATS']
         )  # Makes dataframe
 
-    if compute_difference:
+    if return_qats_vs_qa:
         return qats_predictions
     else:
         qats_errors = qats_predictions.transform(lambda x: x - qc_prediction)

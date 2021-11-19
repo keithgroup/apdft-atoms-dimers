@@ -41,16 +41,18 @@ def _calc_distance(r1, r2):
     return np.linalg.norm(r1 - r2)
 
 def _json_parse_qc(system_label, json_calc, only_converged=False):
-    """
+    """Converts a system's PySCF calculation into quantum chemistry dataframe
+    rows for all lambda values.
 
     Parameters
     ----------
     system_label : :obj:`str`
         The string that defines the atoms and or molecules.
     json_calc : :obj:`dict`
-        All data from a single calculation in a single dictionary.
+        All data from a single calculation involving a specific system, charge,
+        and multiplicity.
     only_converged : :obj:`bool`, optional
-        Only include data where calculations converged. Defaults to ``True``.
+        Only include data where calculations converged. Defaults to ``False``.
     
     Returns
     -------
@@ -66,7 +68,7 @@ def _json_parse_qc(system_label, json_calc, only_converged=False):
     electronic_energies = json_calc['electronic_energies']
     scf_converged = json_calc['scf_converged']
 
-    # Keys that are not always included.
+    # Keys that are not present in every calculation.
     if 'cc_converged' in json_calc.keys():
         cc_converged = json_calc['cc_converged']
     else:
@@ -140,10 +142,8 @@ def _json_parse_qc(system_label, json_calc, only_converged=False):
     return df_rows
 
 def _json_parse_qats(system_label, json_calc):
-    """
-
-    Currently there are no checks that the calculations pertinent to finite
-    differences have converged.
+    """Converts a system's PySCF calculation into quantum chemistry with
+    Taylor series dataframe row.
 
     Parameters
     ----------
@@ -177,7 +177,7 @@ def _json_parse_qats(system_label, json_calc):
 
     return [df_dict]
 
-def get_qc_dframe(json_dict, only_converged=False):
+def qc_dframe(json_dict, only_converged=False):
     """Prepares a Pandas dataframe of quantum chemistry data from a JSON file.
 
     Parameters
@@ -200,9 +200,7 @@ def get_qc_dframe(json_dict, only_converged=False):
     """
     prelim_df = []
 
-    # Loops through every system.
     for system_label in json_dict.keys():
-        # Loops through every state calculation (of multiple lambdas).
         for state_label in json_dict[system_label].keys():
             for calc_label in json_dict[system_label][state_label].keys():
                 if 'electronic_energies' in json_dict[system_label][state_label][calc_label].keys():
@@ -309,10 +307,9 @@ def extrapolate_correlation(correlation_energies, cardinals, beta):
     cbs_correlation = numerator / denominator
     return cbs_correlation
 
-def get_qc_df_cbs(
+def add_cbs_extrap_qc_df(
     df_qc, cbs_basis_key='aug', basis_set_lower='aug-cc-pVTZ',
-    basis_set_higher='aug-cc-pVQZ'
-):
+    basis_set_higher='aug-cc-pVQZ'):
     """Extrapolates post-HF energies and adds CBS rows.
 
     Parameters
@@ -408,7 +405,7 @@ def get_qc_df_cbs(
     df_cbs = df_qc.append(df_cbs_prelim)
     return df_cbs
 
-def get_qats_dframe(json_dict):
+def qats_dframe(json_dict):
     """Prepares a Pandas dataframe of QATS-relevant data.
 
     Parameters
@@ -447,11 +444,10 @@ def get_qats_dframe(json_dict):
                 
     return pd.DataFrame(prelim_df)
 
-def get_qats_df_cbs(
+def add_cbs_extrap_qats_df(
     df_qc, df_qats, cbs_basis_key='aug', basis_set_higher='aug-cc-pVQZ',
     max_qats_order=4, finite_diff_delta=0.01,
-    finite_diff_acc=2,
-):
+    finite_diff_acc=2):
     """Adds QATS rows from CBS extrapolated data to a dataframe.
 
     Parameters
@@ -568,6 +564,9 @@ def prepare_dfs(json_path, get_CBS=False, only_converged=False):
         Path to JSON file.
     get_CBS : :obj:`bool`
         Perform complete basis set extrapolations on both dataframes.
+    only_converged : :obj:`bool`, optional
+        Only include QC data where calculations converged. Defaults to
+        ``False``.
     
     Returns
     -------
@@ -577,14 +576,14 @@ def prepare_dfs(json_path, get_CBS=False, only_converged=False):
         The QATS dataframe.
     """
     data_dict = read_json(json_path)
-    df_qc = get_qc_dframe(data_dict, only_converged=only_converged)
-    df_qats = get_qats_dframe(data_dict)
+    df_qc = qc_dframe(data_dict, only_converged=only_converged)
+    df_qats = qats_dframe(data_dict)
     if get_CBS:
-        df_qc = get_qc_df_cbs(
+        df_qc = add_cbs_extrap_qc_df(
             df_qc, cbs_basis_key='aug', basis_set_lower='aug-cc-pVTZ',
             basis_set_higher='aug-cc-pVQZ'
         )
-        df_qats = get_qats_df_cbs(
+        df_qats = add_cbs_extrap_qats_df(
             df_qc, df_qats, cbs_basis_key='aug',
             basis_set_higher='aug-cc-pVQZ'
         )

@@ -209,7 +209,7 @@ def energy_change_charge_qc_atom(
 def energy_change_charge_qa_atom(
     df_qc, df_qats, target_label, delta_charge, target_initial_charge=0,
     change_signs=False, basis_set='aug-cc-pV5Z', use_ts=True,
-    ignore_one_row=True, considered_lambdas=None, compute_difference=False):
+    ignore_one_row=True, considered_lambdas=None, return_qats_vs_qa=False):
     """Calculate the energy difference to change the charge of a target atom
     using quantum alchemy with or without a Taylor series.
 
@@ -250,7 +250,8 @@ def energy_change_charge_qa_atom(
         Allows specification of lambda values that will be considered. ``None``
         will allow all lambdas to be valid, ``[1, -1]`` would only report
         predictions using references using a lambda of ``1`` or ``-1``.
-    compute_difference : :obj:`bool`, optional
+        Defaults to ``None``.
+    return_qats_vs_qa : :obj:`bool`, optional
         Return the difference of QATS-n - QA predictions; i.e., the error of
         using a Taylor series with repsect to the alchemical
         PES. Defaults to ``False``.
@@ -263,7 +264,7 @@ def energy_change_charge_qa_atom(
         of the references and values are :obj:`numpy.ndarray` of energy
         predictions in Hartrees.
     """
-    if compute_difference: assert use_ts == True
+    if return_qats_vs_qa: assert use_ts == True
     assert len(df_qc.iloc[0]['atomic_numbers']) != 2
     assert delta_charge != 0
     if delta_charge < 0: assert change_signs == True
@@ -346,7 +347,7 @@ def energy_change_charge_qa_atom(
                 continue
 
         # Predictions with a Taylor series.
-        if use_ts or compute_difference == True:
+        if use_ts or return_qats_vs_qa == True:
             order_preds = []
             for order in range(len(ref_initial.iloc[0]['poly_coeffs'])):
                 e_target_initial = qats_prediction(
@@ -363,7 +364,7 @@ def energy_change_charge_qa_atom(
 
             predictions[system] = np.array(order_preds)
         # Predictions without a Taylor series or compute the difference.
-        if not use_ts or compute_difference == True:
+        if not use_ts or return_qats_vs_qa == True:
             chrg_ref_initial = ref_initial.iloc[0]['charge']
             mult_ref_initial = ref_initial.iloc[0]['multiplicity']
             ref_initial_qc = df_qc.query(
@@ -389,7 +390,7 @@ def energy_change_charge_qa_atom(
             if change_signs:
                 e_diff *= -1
             
-            if compute_difference:
+            if return_qats_vs_qa:
                 pred_diff = [i - e_diff for i in predictions[system]]
                 predictions[system] = np.array(pred_diff)
             else:
@@ -823,7 +824,7 @@ def energy_change_charge_qa_dimer(
     target_initial_charge=0, change_signs=False, basis_set='cc-pV5Z',
     use_ts=True, lambda_specific_atom=None, lambda_direction=None,
     ignore_one_row=True, poly_order=4, n_points=2, remove_outliers=False,
-    considered_lambdas=None, compute_difference=False):
+    considered_lambdas=None, return_qats_vs_qa=False):
     """Use an QATS reference to predict the energy change due to adding or
     removing an electron to dimers.
 
@@ -886,14 +887,14 @@ def energy_change_charge_qa_dimer(
         Allows specification of lambda values that will be considered. ``None``
         will allow all lambdas to be valid, ``[1, -1]`` would only report
         predictions using references using a lambda of ``1`` or ``-1``.
-    compute_difference : :obj:`bool`, optional
+    return_qats_vs_qa : :obj:`bool`, optional
         Return the difference of QATS-n - QATS predictions; i.e., the error of
         using a Taylor series approximation with repsect to the alchemical
         potential energy surface. Defaults to ``False``.
     """    
     assert delta_charge != 0
     assert len(df_qc.iloc[0]['atomic_numbers']) == 2
-    if compute_difference: assert use_ts == True
+    if return_qats_vs_qa: assert use_ts == True
 
     # Selects initial target ground state QC data.
     target_initial_qc = df_qc[
@@ -978,7 +979,7 @@ def energy_change_charge_qa_dimer(
         bond_length_order_initial = np.argsort(ref_initial['bond_length'].values)
         bond_length_order_final = np.argsort(ref_final['bond_length'].values)
 
-        if use_ts or compute_difference == True:
+        if use_ts or return_qats_vs_qa == True:
             order_preds = []
             for order in range(len(ref_initial.iloc[0]['poly_coeffs'])):
                 bond_lengths_initial, energies_initial = _dimer_curve(
@@ -1004,7 +1005,7 @@ def energy_change_charge_qa_dimer(
                     e_diff *= -1
                 order_preds.append(e_diff)
             predictions[system] = np.array(order_preds)
-        if not use_ts or compute_difference == True:
+        if not use_ts or return_qats_vs_qa == True:
             chrg_ref_initial = ref_initial.iloc[0]['charge']
             mult_ref_initial = ref_initial.iloc[0]['multiplicity']
             ref_initial_qc = df_qc.query(
@@ -1042,7 +1043,7 @@ def energy_change_charge_qa_dimer(
             if change_signs:
                 e_diff *= -1
             
-            if compute_difference:
+            if return_qats_vs_qa:
                 pred_diff = [i - e_diff for i in predictions[system]]
                 predictions[system] = np.array(pred_diff)
             else:
@@ -1104,7 +1105,7 @@ def mult_gap_qc_atom(
 def mult_gap_qa_atom(
     df_qc, df_qats, target_label, target_charge=0,
     basis_set='aug-cc-pV5Z', use_ts=True, ignore_one_row=True,
-    considered_lambdas=None, compute_difference=False
+    considered_lambdas=None, return_qats_vs_qa=False
 ):
     """Multiplicity gap predictions of atoms using quantum alchemy.
 
@@ -1129,7 +1130,7 @@ def mult_gap_qa_atom(
         Allows specification of lambda values that will be considered. ``None``
         will allow all lambdas to be valid, ``[1, -1]`` would only report
         predictions using references using a lambda of ``1`` or ``-1``.
-    compute_difference : :obj:`bool`, optional
+    return_qats_vs_qa : :obj:`bool`, optional
         Return the difference of QATS-n - QATS predictions; i.e., the error of
         using a Taylor series approximation with repsect to the alchemical
         potential energy surface. Defaults to ``False``.
@@ -1140,7 +1141,7 @@ def mult_gap_qa_atom(
         Difference in energy between ground and excited state in Hartrees
         (values) for each quantum alchemy reference (keys).
     """
-    if compute_difference:
+    if return_qats_vs_qa:
         assert use_ts == True
 
     # Selects initial target ground state QC data.
@@ -1205,7 +1206,7 @@ def mult_gap_qa_atom(
             if lambda_initial not in considered_lambdas:
                 continue
 
-        if use_ts or compute_difference == True:
+        if use_ts or return_qats_vs_qa == True:
             order_preds = []
             for order in range(len(ref_initial.iloc[0]['poly_coeffs'])):
                 e_target_initial = qats_prediction(
@@ -1217,7 +1218,7 @@ def mult_gap_qa_atom(
                 e_diff = (e_target_final - e_target_initial)[0]
                 order_preds.append(e_diff)
             predictions[system] = np.array(order_preds)
-        if not use_ts or compute_difference == True:
+        if not use_ts or return_qats_vs_qa == True:
             chrg_ref_initial = ref_initial.iloc[0]['charge']
             mult_ref_initial = ref_initial.iloc[0]['multiplicity']
             
@@ -1241,7 +1242,7 @@ def mult_gap_qa_atom(
             e_target_final = ref_final_qc.iloc[0]['electronic_energy']
             e_diff = e_target_final - e_target_initial
             
-            if compute_difference:
+            if return_qats_vs_qa:
                 pred_diff = [i - e_diff for i in predictions[system]]
                 predictions[system] = np.array(pred_diff)
             else:

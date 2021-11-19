@@ -24,7 +24,7 @@ import pytest
 import numpy as np
 
 
-from qa_tools.data import prepare_dfs, get_qc_df_cbs
+from qa_tools.data import *
 from qa_tools.prediction import *
 from qa_tools.analysis import *
 
@@ -42,7 +42,7 @@ df_qc_dimer, df_qats_dimer = prepare_dfs(
 def prepare_cbs_atom():
     global df_qc_atom_cbs
     global df_qats_atom_cbs
-    df_qc_atom_cbs = get_qc_df_cbs(
+    df_qc_atom_cbs = add_cbs_extrap_qc_df(
         df_qc_atom, cbs_basis_key='aug', basis_set_lower='aug-cc-pVTZ',
         basis_set_higher='aug-cc-pVQZ'
     )
@@ -53,7 +53,7 @@ def test_alchemical_errors():
     basis_set = 'aug-cc-pV5Z'
     return_energies = False
 
-    state_labels, qa_errors = get_alchemical_errors(
+    state_labels, qa_errors = qa_pes_errors(
         df_qc_atom, n_electrons, excitation_level=excitation_level,
         basis_set=basis_set, return_energies=return_energies
     )

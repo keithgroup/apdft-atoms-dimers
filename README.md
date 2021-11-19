@@ -31,7 +31,7 @@ Individual JSON, log files, and explanations for [atoms](https://github.com/keit
 
 A collection of modules that streamline the quantum alchemy analysis workflow.
 
-- `data.py`: Manages parsing and converting JSON files into panda data frames.
+- `data.py`: Manages parsing and converting JSON files into panda dataframes.
 - `prediction.py`: Property predictions or querying of data frames.
 - `analysis.py`: Automated functions to assist analysis.
 - `utils.py`: Useful functions that support other modules.
@@ -42,8 +42,7 @@ Routines to check and analyze calculation JSON files and generate PySCF/quantum 
 
 ### notebooks
 
-Jupyter notebook examples of how to query and analyze atom and dimer calculations.
-Ionization energies, electron affinities, excited states, equilibrium bond lengths, and potential energy surfaces.
+Jupyter notebook examples of how to query and analyze atom and dimer calculations for: ionization energies, electron affinities, multiplicity gaps, equilibrium bond lengths, and quantum alchemical potential energy surfaces.
 
 ## Terminology
 
@@ -57,7 +56,7 @@ For example, the ionization energy, electron affinity, or multiplicity gap of N.
 Must have the same number of electrons as the target system.
 For example, to predict the energy of N we could use B<sup>2&ndash;</sup>, C<sup> &ndash;</sup>, O<sup>+</sup>, and F<sup>2+</sup>.
 - **Quantum alchemy with Taylor series (QATS)**: Approximating the alchemical potential energy surface (PES) using a Taylor series centered at &#8710;Z = 0.
-Central finite difference using a h of 0.01 was used to calculate first through fourth derivatives.
+Central finite difference using an *h* of 0.01 was used to calculate first through fourth derivatives.
 
 ## License
 
