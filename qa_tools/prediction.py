@@ -439,7 +439,7 @@ def dimer_minimum(bond_lengths, energies, n_points=2, poly_order=4,
     )
     return eq_bond_length, eq_energy
 
-def dimer_curve(df, lambda_value=None, use_ts=False, qats_order=None):
+def _dimer_curve(df, lambda_value=None, use_ts=False, qats_order=None):
     """Bond lengths and their respective electronic energies using quantum
     chemistry or alchemy.
 
@@ -499,8 +499,8 @@ def dimer_curve(df, lambda_value=None, use_ts=False, qats_order=None):
         energies = df['electronic_energy'].values[bond_length_order]
         return np.array(bond_lengths), np.array(energies)
 
-def dimer_binding_curve(
-    df_qc, system_label, system_charge, excitation_level=0, calc_type='qc',
+def dimer_bonding_curve(
+    df_qc, target_label, target_charge, excitation_level=0, calc_type='qc',
     use_ts=False, df_qats=None, specific_atom=0,
     direction=None, basis_set='cc-pV5Z', n_points=2, poly_order=4,
     remove_outliers=False, zscore_cutoff=3.0, considered_lambdas=None):
@@ -510,9 +510,9 @@ def dimer_binding_curve(
     ----------
     df_qc : :obj:`pandas.DataFrame`
         Quantum chemistry dataframe.
-    system_label : :obj:`str`
+    target_label : :obj:`str`
         Atoms in the system. For example, ``'f.h'``.
-    system_charge : :obj:`str`
+    target_charge : :obj:`str`
         Overall change in the system.
     excitation_level : :obj:`int`, optional
         Specifies the desired electronic state. ``0`` for ground state and
@@ -557,8 +557,8 @@ def dimer_binding_curve(
     """
     assert calc_type in ['qc', 'alchemy']
     df_sys = df_qc.query(
-        'system == @system_label'
-        '& charge == @system_charge'
+        'system == @target_label'
+        '& charge == @target_charge'
     )
     multiplicity_sys = get_multiplicity(
         df_sys.query('lambda_value == 0'), excitation_level
@@ -567,11 +567,11 @@ def dimer_binding_curve(
 
     if calc_type == 'qc':
         df_sys = df_sys.query('lambda_value == 0')
-        bl_sys, e_sys = dimer_curve(df_sys, lambda_value=0)
+        bl_sys, e_sys = _dimer_curve(df_sys, lambda_value=0)
         bl_sys = np.array(bl_sys)
         e_sys = np.array(e_sys)
-        bl_dict = {system_label: bl_sys}
-        e_dict = {system_label: e_sys}
+        bl_dict = {target_label: bl_sys}
+        e_dict = {target_label: e_sys}
         return bl_dict, e_dict
     
     elif calc_type == 'alchemy':
@@ -583,7 +583,7 @@ def dimer_binding_curve(
         else:
             df_selection = 'qc'
         df_refs = get_qa_refs(
-            df_qc, df_qats, system_label, sys_n_electron,
+            df_qc, df_qats, target_label, sys_n_electron,
             basis_set=basis_set, df_selection=df_selection,
             excitation_level=excitation_level,
             specific_atom=specific_atom, direction=direction
@@ -606,7 +606,7 @@ def dimer_binding_curve(
                     continue
             
             if not use_ts:
-                bl_ref, e_ref = dimer_curve(
+                bl_ref, e_ref = _dimer_curve(
                     df_ref, lambda_value=ref_lambda_value,
                     use_ts=use_ts, qats_order=None
                 )
@@ -616,7 +616,7 @@ def dimer_binding_curve(
 
                 max_qats_order = len(df_ref.iloc[0]['poly_coeffs'])
                 for qats_order in range(max_qats_order):
-                    bl_ref_order, e_ref_order = dimer_curve(
+                    bl_ref_order, e_ref_order = _dimer_curve(
                         df_ref, lambda_value=ref_lambda_value,
                         use_ts=use_ts, qats_order=qats_order
                     )
@@ -631,19 +631,19 @@ def dimer_binding_curve(
         return bl_dict, e_dict
 
 def dimer_eq(
-    df_qc, system_label, system_charge, excitation_level=0, calc_type='qc',
+    df_qc, target_label, target_charge, excitation_level=0, calc_type='qc',
     use_ts=False, df_qats=None, specific_atom=0,
     direction=None, basis_set='cc-pV5Z', n_points=2, poly_order=4,
     remove_outliers=False, zscore_cutoff=3.0, considered_lambdas=None):
-    """Compute the equilbirum bond length and energy using a polynomial fit.
+    """Compute the equilibrium bond length from quantum chemistry or alchemy.
 
     Parameters
     ----------
     df_qc : :obj:`pandas.DataFrame`
         Quantum chemistry dataframe.
-    system_label : :obj:`str`
+    target_label : :obj:`str`
         Atoms in the system. For example, ``'f.h'``.
-    system_charge : :obj:`str`
+    target_charge : :obj:`str`
         Overall change in the system.
     excitation_level : :obj:`int`, optional
         Specifies the desired electronic state. ``0`` for ground state and
@@ -688,8 +688,8 @@ def dimer_eq(
     """
     assert calc_type in ['qc', 'alchemy']
     
-    bl_dict, e_dict = dimer_binding_curve(
-        df_qc, system_label, system_charge, excitation_level=excitation_level,
+    bl_dict, e_dict = dimer_bonding_curve(
+        df_qc, target_label, target_charge, excitation_level=excitation_level,
         calc_type=calc_type, use_ts=use_ts, df_qats=df_qats,
         specific_atom=specific_atom, direction=direction, basis_set=basis_set,
         n_points=n_points, poly_order=poly_order,
@@ -721,7 +721,7 @@ def dimer_eq(
     
     return bl_eq_dict, e_eq_dict
 
-def get_qc_change_charge_dimer(
+def energy_change_charge_qc_dimer(
     df_qc, target_label, delta_charge, target_initial_charge=0,
     change_signs=False, basis_set='cc-pV5Z',
     ignore_one_row=True, n_points=2, poly_order=4, remove_outliers=False,
@@ -781,7 +781,7 @@ def get_qc_change_charge_dimer(
         'multiplicity == @ground_multiplicity_initial'
     )
     target_initial_n_electrons = target_initial_qc.n_electrons.values[0]
-    target_initial_bond_lengths, target_initial_energies = dimer_curve(
+    target_initial_bond_lengths, target_initial_energies = _dimer_curve(
         target_initial_qc, lambda_value=None, use_ts=False,
         qats_order=None
     )
@@ -804,7 +804,7 @@ def get_qc_change_charge_dimer(
     target_final_qc = target_final_qc.query(
         'multiplicity == @ground_multiplicity_final'
     )
-    target_final_bond_lengths, target_final_energies = dimer_curve(
+    target_final_bond_lengths, target_final_energies = _dimer_curve(
         target_final_qc, lambda_value=None, use_ts=False, qats_order=None
     )
     _, target_final_energy = dimer_minimum(
@@ -818,7 +818,7 @@ def get_qc_change_charge_dimer(
         e_diff *= -1
     return e_diff
 
-def get_qa_change_charge_dimer(
+def energy_change_charge_qa_dimer(
     df_qc, df_qats, target_label, delta_charge,
     target_initial_charge=0, change_signs=False, basis_set='cc-pV5Z',
     use_ts=True, lambda_specific_atom=None, lambda_direction=None,
@@ -845,19 +845,20 @@ def get_qa_change_charge_dimer(
         Atoms in the system. For example, ``'c'``, ``'si'``, or ``'f.h'``.
     delta_charge : :obj:`str`
         Overall change in the initial target system.
-    target_initial_charge : :obj:`int`
+    target_initial_charge : :obj:`int`, optional
         Specifies the initial charge state of the target system. For example,
         the first ionization energy is the energy difference going from
         charge ``0 -> 1``, so ``target_initial_charge`` must equal ``0``.
+        Defaults to ``0``.
     change_signs : :obj:`bool`, optional
         Multiply all predictions by -1. Used to correct the sign for computing
         electron affinities. Defaults to ``False``.
     basis_set : :obj:`str`, optional
         Specifies the basis set to use for predictions. Defaults to
-        ``'cc-pVQZ'``.
+        ``'cc-pV5Z'``.
     use_ts : :obj:`bool`, optional
-        Use a Taylor series approximation (with finite differences) to make
-        QATS-n predictions (where n is the order). Defaults to ``True``.
+        Use a Taylor series approximation to make QATS-n predictions
+        (where n is the order). Defaults to ``True``.
     lambda_specific_atom : :obj:`int`, optional
         Applies the entire lambda change to a single atom in dimers. For
         example, OH -> FH+ would be a lambda change of +1 only on the first
@@ -980,7 +981,7 @@ def get_qa_change_charge_dimer(
         if use_ts or compute_difference == True:
             order_preds = []
             for order in range(len(ref_initial.iloc[0]['poly_coeffs'])):
-                bond_lengths_initial, energies_initial = dimer_curve(
+                bond_lengths_initial, energies_initial = _dimer_curve(
                     ref_initial, lambda_value=lambda_initial, use_ts=True,
                     qats_order=order
                 )
@@ -989,7 +990,7 @@ def get_qa_change_charge_dimer(
                     remove_outliers=remove_outliers
                 )
 
-                bond_lengths_final, energies_final = dimer_curve(
+                bond_lengths_final, energies_final = _dimer_curve(
                     ref_final, lambda_value=lambda_final, use_ts=True,
                     qats_order=order
                 )
@@ -1012,7 +1013,7 @@ def get_qa_change_charge_dimer(
                 '& multiplicity == @mult_ref_initial'
                 '& basis_set == @basis_set'
             )
-            bond_lengths_initial, energies_initial = dimer_curve(
+            bond_lengths_initial, energies_initial = _dimer_curve(
                 ref_initial_qc, lambda_value=lambda_initial, use_ts=False,
                 qats_order=None
             )
@@ -1029,7 +1030,7 @@ def get_qa_change_charge_dimer(
                 '& multiplicity == @mult_ref_final'
                 '& basis_set == @basis_set'
             )
-            bond_lengths_final, energies_final = dimer_curve(
+            bond_lengths_final, energies_final = _dimer_curve(
                 ref_final_qc, lambda_value=lambda_final, use_ts=False, qats_order=None
             )
             _, e_target_final = dimer_minimum(
@@ -1049,11 +1050,10 @@ def get_qa_change_charge_dimer(
 
     return predictions
 
-def get_qc_excitation(
-    df_qc, target_label, target_charge=0, excitation_level=1,
-    basis_set='aug-cc-pVQZ', ignore_one_row=True
-):
-    """Calculate excitation energies using a quantum-chemistry dataframe.
+def mult_gap_qc_atom(
+    df_qc, target_label, target_charge=0,
+    basis_set='aug-cc-pV5Z', ignore_one_row=True):
+    """Multiplicity gap predictions of atoms using quantum chemistry.
 
     Parameters
     ----------
@@ -1061,11 +1061,20 @@ def get_qc_excitation(
         Quantum chemistry dataframe.
     target_label : :obj:`str`
         Atoms in the system. For example, ``'c'``, ``'si'``, or ``'f.h'``.
+    target_charge : :obj:`int`
+        The system charge.
+    basis_set : :obj:`str`, optional
+        Specifies the basis set to use for predictions. Defaults to
+        ``'aug-cc-pV5Z'``.
+    ignore_one_row : :obj:`bool`, optional
+        Used to control errors in ``state_selection`` when there is missing
+        data (i.e., just one state). If ``True``, no errors are raised. Defaults
+        to ``True``.
 
     Returns
     -------
     :obj:`numpy.float64`
-        The excitation energy in Hartrees.
+        Difference in energy between ground and excited state in Hartrees.
     """
     # Selects initial target ground state QC data.
     target_qc = df_qc[
@@ -1084,7 +1093,7 @@ def get_qc_excitation(
         )
         assert len(target_initial_qc) == 1  # Should only have one row.
         target_final_qc = select_state(
-            target_qc, excitation_level, ignore_one_row=ignore_one_row
+            target_qc, 1, ignore_one_row=ignore_one_row
         )
         assert len(target_final_qc) == 1  # Should only have one row.
 
@@ -1092,15 +1101,26 @@ def get_qc_excitation(
              - target_initial_qc.iloc[0]['electronic_energy']
     return e_diff
 
-def get_qa_excitation(
-    df_qc, df_qats, target_label, target_charge=0, excitation_level=1,
-    basis_set='aug-cc-pVQZ', use_ts=True, ignore_one_row=True,
+def mult_gap_qa_atom(
+    df_qc, df_qats, target_label, target_charge=0,
+    basis_set='aug-cc-pV5Z', use_ts=True, ignore_one_row=True,
     considered_lambdas=None, compute_difference=False
 ):
-    """Calculate excitation energies using a quantum-chemistry dataframe.
+    """Multiplicity gap predictions of atoms using quantum alchemy.
 
     Parameters
     ----------
+    df_qc : :obj:`pandas.dataframe`
+        Quantum chemistry dataframe.
+    df_qats : :obj:`pandas.DataFrame`
+        A pandas dataframe with QATS data.
+    target_label : :obj:`str`
+        Atoms in the system. For example, ``'c'``, ``'si'``, or ``'f.h'``.
+    target_charge : :obj:`int`, optional
+        The system charge. Defaults to ``0``.
+    basis_set : :obj:`str`, optional
+        Specifies the basis set to use for predictions. Defaults to
+        ``'aug-cc-pV5Z'``.
     ignore_one_row : :obj:`bool`, optional
         Used to control errors in ``state_selection`` when there is missing
         data (i.e., just one state). If ``True``, no errors are raised. Defaults
@@ -1112,12 +1132,13 @@ def get_qa_excitation(
     compute_difference : :obj:`bool`, optional
         Return the difference of QATS-n - QATS predictions; i.e., the error of
         using a Taylor series approximation with repsect to the alchemical
-        potential energy surface.
+        potential energy surface. Defaults to ``False``.
 
     Returns
     -------
-    :obj:`numpy.float64`
-        The excitation energy in Hartrees.
+    :obj:`dict`
+        Difference in energy between ground and excited state in Hartrees
+        (values) for each quantum alchemy reference (keys).
     """
     if compute_difference:
         assert use_ts == True
@@ -1142,7 +1163,7 @@ def get_qa_excitation(
         )
         assert len(target_initial_qc) == 1  # Should only have one row.
         target_final_qc = select_state(
-            target_qc, excitation_level, ignore_one_row=ignore_one_row
+            target_qc, 1, ignore_one_row=ignore_one_row
         )
         assert len(target_final_qc) == 1  # Should only have one row.
     target_atomic_numbers = target_initial_qc.iloc[0]['atomic_numbers']
@@ -1161,7 +1182,7 @@ def get_qa_excitation(
             ref_qats, 0, ignore_one_row=ignore_one_row
         )
         ref_final_qats = select_state(
-            ref_qats, excitation_level, ignore_one_row=ignore_one_row
+            ref_qats, 1, ignore_one_row=ignore_one_row
         )
 
     # Checks that the size of initial and final dataframe is the same
@@ -1187,8 +1208,12 @@ def get_qa_excitation(
         if use_ts or compute_difference == True:
             order_preds = []
             for order in range(len(ref_initial.iloc[0]['poly_coeffs'])):
-                e_target_initial = qats_prediction(ref_initial.iloc[0]['poly_coeffs'], order, lambda_initial)
-                e_target_final = qats_prediction(ref_final.iloc[0]['poly_coeffs'], order, lambda_final)
+                e_target_initial = qats_prediction(
+                    ref_initial.iloc[0]['poly_coeffs'], order, lambda_initial
+                )
+                e_target_final = qats_prediction(
+                    ref_final.iloc[0]['poly_coeffs'], order, lambda_final
+                )
                 e_diff = (e_target_final - e_target_initial)[0]
                 order_preds.append(e_diff)
             predictions[system] = np.array(order_preds)

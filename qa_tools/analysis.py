@@ -343,7 +343,7 @@ def qats_error_change_charge_dimer(
     """Computes QATS errors in change the charge of a system.
     """
     qc_prediction = hartree_to_ev(
-        get_qc_change_charge_dimer(
+        energy_change_charge_qc_dimer(
             df_qc, target_label, delta_charge,
             target_initial_charge=target_initial_charge,
             change_signs=change_signs, basis_set=basis_set,
@@ -352,7 +352,7 @@ def qats_error_change_charge_dimer(
             zscore_cutoff=zscore_cutoff
         )
     )
-    qats_predictions = get_qa_change_charge_dimer(
+    qats_predictions = energy_change_charge_qa_dimer(
         df_qc, df_qats, target_label, delta_charge,
         target_initial_charge=target_initial_charge, change_signs=change_signs,
         basis_set=basis_set, use_ts=use_ts,
@@ -393,13 +393,13 @@ def qats_error_excitation_energy(
     :obj:`pandas.DataFrame`
     """
     qc_prediction = hartree_to_ev(
-        get_qc_excitation(
+        mult_gap_qc_atom(
             df_qc, target_label, target_charge=target_charge,
             excitation_level=excitation_level, basis_set=basis_set,
             ignore_one_row=ignore_one_row
         )
     )
-    qats_predictions = get_qa_excitation(
+    qats_predictions = mult_gap_qa_atom(
         df_qc, df_qats, target_label, target_charge=target_charge,
         excitation_level=excitation_level, basis_set=basis_set,
         use_ts=use_ts, ignore_one_row=ignore_one_row,

@@ -25,6 +25,7 @@ import numpy as np
 
 from qa_tools.data import prepare_dfs, get_qc_df_cbs
 from qa_tools.prediction import *
+from qa_tools.prediction import _dimer_curve
 from qa_tools.utils import *
 
 json_path_atoms = './json-data/atom-pyscf.qa-data.posthf.json'
@@ -193,7 +194,7 @@ def test_ch_ie1_qc_dimer_correctness():
     """
     ie1_manual = 0.3904478904319859
 
-    ie1_qc = get_qc_change_charge_dimer(
+    ie1_qc = energy_change_charge_qc_dimer(
         df_qc_dimer, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
@@ -218,7 +219,7 @@ def test_bond_lengths_qats_ch_from_bh():
         -38.38141483069795, -38.36692691826404, -38.35268868360573,
         -38.33896887440571, -38.32589894564336]
     )
-    bond_lengths, energies = dimer_curve(
+    bond_lengths, energies = _dimer_curve(
         df_qats_ref, lambda_value=lambda_value, use_ts=True, qats_order=2,
     )
     assert np.array_equal(bond_lengths_manual, bond_lengths)
@@ -245,7 +246,7 @@ def test_ch_ie1_qats_dimer_correctness():
         'b.h': np.array([0.3903041968078611]),
         'n.h': np.array([0.38959475994708725])
     }
-    ie1_qats = get_qa_change_charge_dimer(
+    ie1_qats = energy_change_charge_qa_dimer(
         df_qc_dimer, df_qats_dimer, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
@@ -282,10 +283,10 @@ def test_ch_ie1_qats_dimer_correctness():
     bh_lambda_value = 1
     nh_lambda_value = -1
 
-    bh_bond_lengths_initial, bh_e_initial = dimer_curve(
+    bh_bond_lengths_initial, bh_e_initial = _dimer_curve(
         df_qats_bh_initial, lambda_value=bh_lambda_value, use_ts=True, qats_order=qats_order
     )
-    bh_bond_lengths_final, bh_e_final = dimer_curve(
+    bh_bond_lengths_final, bh_e_final = _dimer_curve(
         df_qats_bh_final, lambda_value=bh_lambda_value, use_ts=True, qats_order=qats_order
     )
     bh_bond_lengths_initial_eq, bh_e_initial_eq = dimer_minimum(
@@ -301,10 +302,10 @@ def test_ch_ie1_qats_dimer_correctness():
 
     
 
-    nh_bond_lengths_initial, nh_e_initial = dimer_curve(
+    nh_bond_lengths_initial, nh_e_initial = _dimer_curve(
         df_qats_nh_initial, lambda_value=nh_lambda_value, use_ts=True, qats_order=qats_order
     )
-    nh_bond_lengths_final, nh_e_final = dimer_curve(
+    nh_bond_lengths_final, nh_e_final = _dimer_curve(
         df_qats_nh_final, lambda_value=nh_lambda_value, use_ts=True, qats_order=qats_order
     )
     nh_bond_lengths_initial_eq, nh_e_initial_eq = dimer_minimum(
@@ -327,7 +328,7 @@ def test_ch_ie1_qats_dimer_correctness():
         )
     }
 
-    ie1_qats = get_qa_change_charge_dimer(
+    ie1_qats = energy_change_charge_qa_dimer(
         df_qc_dimer, df_qats_dimer, target_label, delta_charge,
         target_initial_charge=target_initial_charge,
         change_signs=change_signs, basis_set=basis_set,
@@ -482,7 +483,7 @@ def test_oh_from_ne_from_qc():
         -75.62038369356912, -75.60324660673356, -75.58851756031235,
         -75.57635994999121, -75.47142171254076
     ])
-    _, neh_energies = dimer_curve(
+    _, neh_energies = _dimer_curve(
         df_ref_neh, lambda_value=-2
     )
     assert np.allclose(neh_energies, neh_energies_manual)
@@ -594,7 +595,7 @@ def test_ch_bond_lengths_alchemy():
     target_atomic_numbers = df_qc_system.iloc[0]['atomic_numbers']
 
 
-    qc_system_bl, qc_system_e = dimer_curve(df_qc_system, lambda_value=0)
+    qc_system_bl, qc_system_e = _dimer_curve(df_qc_system, lambda_value=0)
 
     qc_eq_bl, qc_eq_e = dimer_minimum(
         qc_system_bl,qc_system_e, n_points=n_points, poly_order=poly_order,
@@ -627,11 +628,11 @@ def test_ch_bond_lengths_alchemy():
         )
         pred_lambda_values[i] = round(ref_lambda_value)
         if use_ts:
-            pred_system_bl[i], pred_system_e[i] = dimer_curve(
+            pred_system_bl[i], pred_system_e[i] = _dimer_curve(
                 df_ref_sys, lambda_value=ref_lambda_value, use_ts=use_ts, qats_order=qats_order
             )
         else:
-            pred_system_bl[i], pred_system_e[i] = dimer_curve(
+            pred_system_bl[i], pred_system_e[i] = _dimer_curve(
                 df_ref_sys, lambda_value=ref_lambda_value, use_ts=use_ts
             )
         pred_eq_bond_lengths[i], pred_eq_energies[i] = dimer_minimum(
@@ -651,11 +652,11 @@ def test_ch_bond_lengths_alchemy():
             )
 
 
-#######################################
-#####     Excitation Energies     #####
-#######################################
+####################################
+#####     Multiplicity Gap     #####
+####################################
 
-def test_n_ee_qc_correctness():
+def test_n_mg_qc_correctness():
     target_label = 'n'
     target_charge = 0
     excitation_level = 1
@@ -665,16 +666,15 @@ def test_n_ee_qc_correctness():
     e_excited = -54.46422759392469
     ea_manual = e_excited - e_ground
 
-    ea_df = get_qc_excitation(
+    ea_df = mult_gap_qc_atom(
         df_qc_atom, target_label, target_charge=target_charge,
-        excitation_level=excitation_level, basis_set=basis_set
+        basis_set=basis_set
     )
     assert ea_manual == ea_df
 
-def test_n_ee_qats_correctness():
+def test_n_mg_qats_correctness():
     target_label = 'n'
     target_charge = 0
-    excitation_level = 1
     basis_set = 'aug-cc-pV5Z'
 
     e_ground_bref = -54.386726697042256  # b.chrg-2.mult4; lambda = 2
@@ -686,7 +686,7 @@ def test_n_ee_qats_correctness():
     e_ground_fref = -54.5717501791145  # f.chrg2.mult4; lambda = -2
     e_excited_fref = -54.47325984455847  # f.chrg2.mult2; lambda = -2
 
-    ee_manual = {
+    mg_manual = {
         'b': e_excited_bref - e_ground_bref,
         'c': e_excited_cref - e_ground_cref,
         'o': e_excited_oref - e_ground_oref,
@@ -695,18 +695,17 @@ def test_n_ee_qats_correctness():
 
     # Alchemical predictions
     use_ts = False
-    ee_qats = get_qa_excitation(
+    mg_qats = mult_gap_qa_atom(
         df_qc_atom, df_qats_atom, target_label, target_charge=target_charge,
-        excitation_level=excitation_level, basis_set=basis_set,
-        use_ts=use_ts
+        basis_set=basis_set, use_ts=use_ts
     )
 
-    ee_qats_keys = [i for i in ee_qats.keys()]
-    ee_qats_keys.sort()
-    assert ee_qats_keys == ['b', 'c', 'f', 'o']
+    mg_qats_keys = [i for i in mg_qats.keys()]
+    mg_qats_keys.sort()
+    assert mg_qats_keys == ['b', 'c', 'f', 'o']
     for key in ['b', 'c', 'f', 'o']:
         assert np.array_equal(
-            ee_qats[key], np.array([ee_manual[key]], dtype='float64')
+            mg_qats[key], np.array([mg_manual[key]], dtype='float64')
         )
 
     # Finite differences
@@ -734,17 +733,14 @@ def test_n_ee_qats_correctness():
     }
 
     use_ts = True
-    ee_qats = get_qa_excitation(
+    mg_qats = mult_gap_qa_atom(
         df_qc_atom, df_qats_atom, target_label, target_charge=target_charge,
-        excitation_level=excitation_level, basis_set=basis_set,
-        use_ts=use_ts
+        basis_set=basis_set, use_ts=use_ts
     )
-    ee_qats_keys = [i for i in ee_qats.keys()]
-    ee_qats_keys.sort()
-    assert ee_qats_keys == ['b', 'c', 'f', 'o']
+    mg_qats_keys = [i for i in mg_qats.keys()]
+    mg_qats_keys.sort()
+    assert mg_qats_keys == ['b', 'c', 'f', 'o']
     for key in ['b', 'c', 'f', 'o']:
         assert np.array_equal(
-            ee_qats[key], ea_qats_manual[key]
+            mg_qats[key], ea_qats_manual[key]
         )
-
-test_oh_from_ne_from_qc()
