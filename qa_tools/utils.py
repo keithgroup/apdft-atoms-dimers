@@ -736,3 +736,39 @@ def alchemical_pes(
         lambda_values += charge
 
     return lambda_values, energies
+
+def clean_state_labels(system_labels, system_charges):
+    """Convert system labels and charges into clean labels like C$^{+}$.
+
+    Typically used for figure axes and labels.
+
+    Parameters
+    ----------
+    system_labels : :obj:`list` [:obj:`str`]
+        Specifies the atoms in the system.
+    system_charges : :obj:`list` [:obj:`int`]
+        Total system charges.
+    
+    Returns
+    -------
+    :obj:`list`
+        Clean state labels.
+    """
+    clean_labels = []
+    for i in range(len(system_labels)):
+        sys_label = ''.join([atom.capitalize() for atom in system_labels[i].split('.')])
+        charge = system_charges[i]
+        if charge > 0:
+            if charge == 1:
+                charge = '+'
+            else:
+                charge = str(charge) + '+'
+        elif charge < 0:
+            if charge == -1:
+                charge = '-'
+            else:
+                charge = str(charge)[1] + '-'
+        else:
+            charge = ''
+        clean_labels.append(sys_label + '$\,^{' + charge + '}$')
+    return clean_labels

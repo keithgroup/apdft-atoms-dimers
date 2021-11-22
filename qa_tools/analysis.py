@@ -537,14 +537,12 @@ def error_mult_gap_qa_atom(
     qc_prediction = hartree_to_ev(
         mult_gap_qc_atom(
             df_qc, target_label, target_charge=target_charge,
-            excitation_level=1, basis_set=basis_set,
-            ignore_one_row=ignore_one_row
+            basis_set=basis_set, ignore_one_row=ignore_one_row
         )
     )
     qats_predictions = mult_gap_qa_atom(
         df_qc, df_qats, target_label, target_charge=target_charge,
-        excitation_level=1, basis_set=basis_set,
-        use_ts=use_ts, ignore_one_row=ignore_one_row,
+        basis_set=basis_set, use_ts=use_ts, ignore_one_row=ignore_one_row,
         considered_lambdas=considered_lambdas,
         return_qats_vs_qa=return_qats_vs_qa
     )
