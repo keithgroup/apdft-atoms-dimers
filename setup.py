@@ -28,14 +28,14 @@ requirements = [
 
 setup(
     name='qa_tools',
-    version='0.0.1',
+    version='1.0.0',
     author='Alex M. Maldonado',
     url='https://github.com/keithgroup/qa-atoms-dimers',
     packages=['qa_tools',],
     install_requires=requirements,
     long_description=open('README.md').read(),
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
