@@ -1,0 +1,29 @@
+message: If you use this software, please cite it as below.
+title: Quantum alchemy tools for atoms and dimer molecules
+authors:
+  - family-names: Eikey
+    given-names: Emily A.
+    orcid: "https://orcid.org/0000-0001-9589-4331"
+  - family-names: Maldonado
+    given-names: Alex M.
+    orcid: "https://orcid.org/0000-0003-3280-062X"
+  - family-names: Griego
+    given-names: Charles D.
+  - family-names: Rudorff
+    given-names: Guido Falk
+    name-particle: von
+    orcid: "https://orcid.org/0000-0001-7987-4330"
+  - family-names: Keith
+    given-names: John A.
+    email: jakeith@pitt.edu
+    orcid: "https://orcid.org/0000-0002-6583-6322"
+type: software
+version: v1.0.0
+repository-code: "https://github.com/keithgroup/qa-atoms-dimers"
+license: MIT
+date-released: "2021-11-22"
+identifiers:
+  - description: The concept DOI of the work.
+    type: doi
+    value: 10.5281/zenodo.5718724
+cff-version: 1.2.0

@@ -58,6 +58,17 @@ For example, to predict the energy of N we could use B<sup>2&ndash;</sup>, C<sup
 - **Quantum alchemy with Taylor series (QATS)**: Approximating the alchemical potential energy surface (PES) using a Taylor series centered at &#8710;Z = 0.
 Central finite difference using an *h* of 0.01 was used to calculate first through fourth derivatives.
 
+## Citation
+
+If you use this software, please cite it as specified in `CITATION.cff`.
+
+## Related publications
+
+This software was used to generate and analyze data for the following manuscripts.
+
+- Eikey, E. A.; Maldonado, A. M.; Griego, C. D.; von Rudorff, G. F.; Keith, J. A. Evaluating quantum alchemy of atoms with thermodynamic cycles: Beyond ground electronic states. *ChemRxiv* **2021**. DOI: 10.26434/chemrxiv-2021-3l4zh
+- Eikey, E. A.; Maldonado, A. M.; Griego, C. D.; von Rudorff, G. F.; Keith, J. A. Quantum alchemy beyond singlets: Bonding in diatomic molecules with hydrogen. *ChemRxiv* **2021**. DOI: 10.26434/chemrxiv-2021-pt5gd
+
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
