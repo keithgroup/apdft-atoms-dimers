@@ -22,6 +22,9 @@ pip install .
 
 ## Contents
 
+**Note:** Atom property predictions involving three-electron systems might slightly differ (&#177; 0.001 eV) from values presented in the respective manuscript.
+Data here uses CCSD(T) calculations for three-electron ground state systems; whereas the manuscript does not include the perturbative triples corrections.
+
 ### json-data
 
 Cumulative JSON files for atoms and dimers containing quantum chemistry and quantum alchemy data for all species of interest.
